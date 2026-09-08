@@ -1,0 +1,281 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ご予約(お席・コース)｜福林楼</title>
+<meta name="description" content="福林楼のご予約ページです。お席のみのご予約から、コース料理のご予約まで承ります。">
+<link rel="canonical" href="https://fukurinrou.github.io/fukurinrou-hp/reserve.html">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+:root{--p:#f7f0e3;--w:#fffdfa;--i:#292017;--r:#8f2b1b;--g:#aa812d;--l:#dfd0b7}
+*{box-sizing:border-box}
+body{margin:0;background:var(--p);color:var(--i);font-family:"Noto Sans JP",sans-serif;line-height:1.8}
+.wrap{width:min(1040px,calc(100% - 28px));margin:auto}
+.bar{background:var(--r);color:#fff}
+.bar .wrap{min-height:62px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.brand{font:700 1.25rem "Noto Serif JP";text-decoration:none;color:#fff}
+.navlinks{display:flex;gap:8px}
+.toplink{color:#fff;text-decoration:none;border:1px solid #ffffff99;border-radius:3px;padding:6px 10px;font-size:.8rem}
+.toplink:hover{background:#ffffff22}
+.intro{padding:32px 0 20px}
+.tag{color:var(--r);font-size:.72rem;letter-spacing:.2em;font-weight:bold}
+.intro h1{font:700 clamp(1.8rem,5vw,2.6rem) "Noto Serif JP";margin:5px 0}
+.intro p{margin:0;color:#67594c;font-size:.9rem;max-width:36em}
+.notice{margin-top:16px;padding:12px 14px;border-left:4px solid var(--g);background:#fff9ef;font-size:.85rem}
+
+.tel-cta{
+  margin:36px 0 0;padding:18px 20px;background:var(--w);border:1px solid var(--l);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px
+}
+.tel-cta div b{font-family:"Noto Serif JP";font-size:1.05rem}
+.tel-cta a.callbtn{
+  background:var(--r);color:#fff;text-decoration:none;padding:11px 22px;
+  border-radius:3px;font-size:.9rem;white-space:nowrap
+}
+
+main{padding:30px 0 20px}
+.formbox{background:var(--w);border:1px solid var(--l);padding:28px 24px}
+fieldset{border:0;margin:0 0 28px;padding:0}
+fieldset legend{
+  font-family:"Noto Serif JP";font-weight:700;font-size:1.05rem;color:var(--r);
+  padding:0 0 10px;margin-bottom:14px;border-bottom:1px solid var(--l);width:100%
+}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.row.single{grid-template-columns:1fr}
+@media(max-width:600px){.row{grid-template-columns:1fr}}
+label{display:block;font-size:.82rem;color:#6b5c4d;margin-bottom:6px}
+label .req{color:var(--r);margin-left:3px}
+input,select,textarea{
+  width:100%;font:inherit;padding:10px 11px;border:1px solid var(--l);
+  background:var(--p);color:var(--i);border-radius:3px
+}
+textarea{resize:vertical;min-height:90px}
+.radio-group{display:flex;gap:16px;flex-wrap:wrap}
+.radio-group label{display:flex;align-items:center;gap:6px;font-size:.9rem;color:var(--i);margin-bottom:0}
+.radio-group input{width:auto}
+
+#courseFields{display:none}
+#courseFields.show{display:block}
+
+.submitrow{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:6px}
+button.submit{
+  background:var(--r);color:#fff;border:0;cursor:pointer;
+  padding:13px 34px;font:inherit;font-size:.95rem;border-radius:3px
+}
+button.submit:hover{background:#6e2013}
+button.submit:disabled{opacity:.6;cursor:default}
+.formnote{font-size:.8rem;color:#8a7a6a}
+
+.confirm{display:none;background:#fff9ef;border:1px solid #dec887;padding:20px;margin-top:20px;font-size:.9rem}
+.confirm.show{display:block}
+.confirm.err{background:#fbeceb;border-color:#dba39c}
+.confirm b{color:var(--r)}
+
+footer{background:var(--i);color:var(--p);padding:30px 0;margin-top:40px;font-size:.8rem}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+footer a{color:var(--p)}
+</style></head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="brand" href="./index.html">福林楼</a>
+    <div class="navlinks">
+      <a class="toplink" href="./menu.html">お料理メニュー</a>
+      <a class="toplink" href="./index.html">ホームへ</a>
+    </div>
+  </div>
+</header>
+
+<section class="intro">
+  <div class="wrap">
+    <div class="tag">RESERVATION</div>
+    <h1>ご予約</h1>
+    <p>お席のみのご予約から、コース料理のご予約まで承ります。ご希望の内容をお選びのうえ、フォームよりお申し込みください。</p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="formbox">
+    <form id="reserveForm">
+
+      <fieldset>
+        <legend>ご予約の種類</legend>
+        <div class="radio-group" id="typeGroup">
+          <label><input type="radio" name="rtype" value="seat" checked> お席のみ</label>
+          <label><input type="radio" name="rtype" value="course"> コース料理</label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>ご来店情報</legend>
+        <div class="row">
+          <div>
+            <label>お名前<span class="req">必須</span></label>
+            <input type="text" name="name" id="f_name" required>
+          </div>
+          <div>
+            <label>お電話番号<span class="req">必須</span></label>
+            <input type="tel" name="tel" id="f_tel" required>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>メールアドレス<span class="req">必須</span></label>
+            <input type="email" name="email" id="f_email" required placeholder="確認メールをお送りします">
+          </div>
+          <div>
+            <label>人数<span class="req">必須</span></label>
+            <input type="number" name="people" id="f_people" min="1" value="2" required>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>ご希望日<span class="req">必須</span></label>
+            <input type="date" name="date" id="f_date" required>
+          </div>
+          <div>
+            <label>ご希望時間<span class="req">必須</span></label>
+            <input type="time" name="time" id="f_time" required>
+          </div>
+        </div>
+        <div class="row single">
+          <div>
+            <label>個室のご希望</label>
+            <select name="room" id="f_room">
+              <option value="希望しない">希望しない</option>
+              <option value="個室を希望する">個室を希望する</option>
+              <option value="どちらでも可">どちらでも可</option>
+            </select>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset id="courseFields">
+        <legend>コース内容</legend>
+        <div class="row single">
+          <div>
+            <label>ご希望のコース</label>
+            <select name="course" id="f_course">
+              <option value="福コース">福コース</option>
+              <option value="招福コース">招福コース</option>
+              <option value="家族コース">家族コース</option>
+              <option value="まだ決めていない・相談したい">まだ決めていない・相談したい</option>
+            </select>
+          </div>
+        </div>
+        <div class="row single">
+          <div>
+            <label>ご予算の目安</label>
+            <input type="text" name="budget" id="f_budget" placeholder="例:お一人様 5,000円くらい">
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>ご要望</legend>
+        <div class="row single">
+          <div>
+            <label>アレルギー・苦手な食材、その他ご要望</label>
+            <textarea name="note" id="f_note" placeholder="例:海老アレルギーがあります／誕生日のお祝いで伺います　など"></textarea>
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="submitrow">
+        <button class="submit" type="submit" id="submitBtn">この内容で予約を送る</button>
+        <span class="formnote">送信後、自動で確認メールが届きます。内容確認のうえ店舗より折り返しご連絡する場合があります。</span>
+      </div>
+    </form>
+
+    <div class="confirm" id="confirmBox"></div>
+  </div>
+
+  <div class="tel-cta">
+    <div>お急ぎの場合はお電話が確実です<br><b>092-481-1369</b>(受付時間 11:30〜)</div>
+    <a class="callbtn" href="tel:0924811369">電話で予約する</a>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>福林楼｜〒812-0016 福岡県福岡市博多区博多駅南3丁目7-14 岡元ビル</div>
+    <div><a href="tel:0924811369">092-481-1369</a></div>
+  </div>
+</footer>
+
+<!-- ===== メール自動送信の設定(EmailJSを使用) =====
+  1) https://www.emailjs.com/ で無料アカウントを作成
+  2) 「Email Services」でGmail等を接続 → SERVICE_ID を取得
+  3) 「Email Templates」を2つ作成
+       ・管理者宛(お店に届く予約通知メール) → ADMIN_TEMPLATE_ID
+       ・お客様宛(お客様に届く確認メール)   → CUSTOMER_TEMPLATE_ID
+       ※お客様宛テンプレートの「To email」欄には {{email}} を設定してください
+  4) 「Account」→「General」で Public Key を取得
+  5) 下の4つの定数を、取得した値に書き換えてください
+========================================== -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+const EMAILJS_PUBLIC_KEY   = "YOUR_PUBLIC_KEY";
+const EMAILJS_SERVICE_ID   = "YOUR_SERVICE_ID";
+const EMAILJS_TEMPLATE_ADMIN    = "YOUR_ADMIN_TEMPLATE_ID";
+const EMAILJS_TEMPLATE_CUSTOMER = "YOUR_CUSTOMER_TEMPLATE_ID";
+
+emailjs.init(EMAILJS_PUBLIC_KEY);
+
+const typeGroup = document.getElementById('typeGroup');
+const courseFields = document.getElementById('courseFields');
+function syncCourseFields(){
+  const val = document.querySelector('input[name="rtype"]:checked').value;
+  courseFields.classList.toggle('show', val === 'course');
+}
+typeGroup.addEventListener('change', syncCourseFields);
+syncCourseFields();
+
+const form = document.getElementById('reserveForm');
+const submitBtn = document.getElementById('submitBtn');
+const confirmBox = document.getElementById('confirmBox');
+
+form.addEventListener('submit', function(e){
+  e.preventDefault();
+
+  const rtype = document.querySelector('input[name="rtype"]:checked').value;
+  const params = {
+    rtype: rtype === 'course' ? 'コース料理' : 'お席のみ',
+    name: document.getElementById('f_name').value,
+    tel: document.getElementById('f_tel').value,
+    email: document.getElementById('f_email').value,
+    people: document.getElementById('f_people').value,
+    date: document.getElementById('f_date').value,
+    time: document.getElementById('f_time').value,
+    room: document.getElementById('f_room').value,
+    course: rtype === 'course' ? document.getElementById('f_course').value : '-',
+    budget: rtype === 'course' ? document.getElementById('f_budget').value : '-',
+    note: document.getElementById('f_note').value
+  };
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = '送信中...';
+
+  Promise.all([
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ADMIN, params),
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CUSTOMER, params)
+  ]).then(function(){
+    confirmBox.className = 'confirm show';
+    confirmBox.innerHTML =
+      '<p>ご予約希望を受け付けました。ご入力のメールアドレスに確認メールをお送りしました。</p>' +
+      '<p>お急ぎの場合は <b>092-481-1369</b> までお電話ください。</p>';
+    form.reset();
+    syncCourseFields();
+    confirmBox.scrollIntoView({behavior:'smooth'});
+  }).catch(function(err){
+    confirmBox.className = 'confirm show err';
+    confirmBox.innerHTML =
+      '<p>申し訳ございません。送信に失敗しました。恐れ入りますが <b>092-481-1369</b> までお電話ください。</p>';
+    confirmBox.scrollIntoView({behavior:'smooth'});
+    console.error(err);
+  }).finally(function(){
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'この内容で予約を送る';
+  });
+});
+</script>
+
+</body></html>
