@@ -1,4 +1,4 @@
-<!-- 2026-09-08 15:03 変更済み -->
+<!-- 2026-09-08 15:43 変更済み -->
 <!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ご予約(お席・コース)｜福林楼</title>
 <meta name="description" content="福林楼のご予約ページです。お席のみのご予約から、コース料理のご予約まで承ります。">
@@ -61,6 +61,12 @@ textarea{resize:vertical;min-height:90px}
 .course-note{margin:0 0 15px;font-size:.84rem;color:#67594c}
 .course-total{margin:12px 0 0;padding:13px 16px;background:#fff3dd;border-left:4px solid var(--r);font-size:.9rem}
 .course-total strong{display:block;color:var(--r);font-size:1.1rem}
+.choice-emphasis{padding:16px;border:2px solid var(--r);background:#fff8eb;border-radius:4px}
+.choice-emphasis label{font:700 1.02rem "Noto Serif JP";color:var(--r)}
+.choice-emphasis select{border:2px solid var(--g);background:#fff;font-weight:700}
+.december-notice{display:none;margin-top:14px;padding:13px 15px;background:#fff0e7;border:1px solid #d88f62;color:#7c2a16;font-size:.85rem}
+.december-notice.show{display:block}.december-notice strong{display:block;margin-bottom:3px}
+#f_people{-moz-appearance:textfield}#f_people::-webkit-outer-spin-button,#f_people::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 
 .submitrow{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:6px}
 button.submit{
@@ -131,7 +137,7 @@ footer a{color:var(--p)}
           </div>
           <div>
             <label>人数<span class="req">必須</span></label>
-            <input type="number" name="people" id="f_people" min="1" value="2" required>
+            <input type="number" name="people" id="f_people" min="1" max="45" value="2" inputmode="numeric" required>
           </div>
         </div>
         <div class="row">
@@ -146,25 +152,26 @@ footer a{color:var(--p)}
             </select>
           </div>
         </div>
+        <div class="december-notice" id="decemberNotice" role="status">
+          <strong>12月にご予約のお客様へ</strong>
+          年末年始はご予約を承れない場合があります。その場合、080-3981-1369からお電話することがありますので、あらかじめご了承ください。
+        </div>
       </fieldset>
 
       <fieldset id="courseFields">
         <legend>コース内容</legend>
-        <p class="course-note">コース料理はすべて<strong>3名様から</strong>承ります。</p>
-        <div class="row single">
-          <div>
+        <p class="course-note">福林コース・招福コースは<strong>3名様から</strong>、家族コースは<strong>2〜4名様</strong>で承ります。</p>
+        <div class="row single"><div class="choice-emphasis">
             <label>ご希望のコース</label>
             <select name="course" id="f_course">
               <option value="福林コース">福林コース（お一人様 3,000円）</option>
               <option value="招福コース">招福コース（お一人様 3,500円）</option>
-              <option value="家族コース">家族コース（3〜4名様 合計 5,800円）</option>
+              <option value="家族コース">家族コース（2〜4名様 合計 5,800円）</option>
               <option value="まだ決めていない・相談したい">まだ決めていない・相談したい</option>
             </select>
             <div class="course-guide" id="courseGuide" aria-live="polite"></div>
-          </div>
-        </div>
-        <div class="row single">
-          <div>
+        </div></div>
+        <div class="row single"><div class="choice-emphasis">
             <label>飲み放題</label>
             <select name="drink" id="f_drink">
               <option value="none">希望しない（＋0円）</option>
@@ -172,8 +179,7 @@ footer a{color:var(--p)}
               <option value="softdrink">ソフトドリンク飲み放題（お一人様＋500円）</option>
             </select>
             <div class="course-total" id="courseTotal" aria-live="polite"></div>
-          </div>
-        </div>
+        </div></div>
       </fieldset>
 
       <fieldset>
@@ -235,6 +241,8 @@ const drinkSelect = document.getElementById('f_drink');
 const courseTotal = document.getElementById('courseTotal');
 const peopleInput = document.getElementById('f_people');
 const timeSelect = document.getElementById('f_time');
+const dateInput = document.getElementById('f_date');
+const decemberNotice = document.getElementById('decemberNotice');
 const courseDetails = {
   '福林コース': {
     price: 'お一人様 3,000円',
@@ -249,7 +257,7 @@ const courseDetails = {
     dishes: ['前菜5種', '大きなエビチリソース <span class="spicy">🌶️</span>', '我が家の酢豚', '揚げ物2種（鶏唐揚げ・春巻き）', '手作り焼き餃子', '海鮮三種炒め', 'ピーマンと牛肉の炒め', 'チャーハン', 'フカヒレスープ', '日替わりデザート']
   },
   '家族コース': {
-    price: '3〜4名様 合計 5,800円',
+    price: '2〜4名様 合計 5,800円',
     baseAmount: 5800,
     priceType: 'fixed',
     dishes: ['前菜3種', '油淋鶏（揚げ鶏肉のネギ醤油かけ）', 'チャーハン', 'マーボー豆腐 <span class="spicy">🌶️</span>', 'エビのチリソース炒め <span class="spicy">🌶️</span>', '焼き餃子', '玉子スープ']
@@ -261,11 +269,27 @@ const drinkPlans = {
   softdrink: { label: 'ソフトドリンク飲み放題', perPerson: 500 }
 };
 function formatYen(amount){ return '￥' + amount.toLocaleString('ja-JP'); }
+function isFamilyCourse(){ return courseSelect.value === '家族コース'; }
+function getDrinkPlan(){
+  const plan = drinkPlans[drinkSelect.value];
+  return drinkSelect.value === 'alcohol' && isFamilyCourse()
+    ? { label: plan.label, perPerson: 2500 }
+    : plan;
+}
+function syncDrinkOptions(){
+  document.querySelector('#f_drink option[value="alcohol"]').textContent = isFamilyCourse()
+    ? '2時間飲み放題（お一人様＋2,500円／90分オーダーストップ）'
+    : '2時間飲み放題（お一人様＋2,000円／90分オーダーストップ）';
+}
+function syncDecemberNotice(){
+  const month = dateInput.value ? Number(dateInput.value.split('-')[1]) : 0;
+  decemberNotice.classList.toggle('show', month === 12);
+}
 function getReservationAmount(){
   const detail = courseDetails[courseSelect.value];
   if(!detail) return null;
   const people = Number(peopleInput.value) || 0;
-  const drink = drinkPlans[drinkSelect.value];
+  const drink = getDrinkPlan();
   const courseAmount = detail.priceType === 'perPerson' ? detail.baseAmount * people : detail.baseAmount;
   const drinkAmount = drink.perPerson * people;
   return {
@@ -299,6 +323,7 @@ function syncCourseGuide(){
   const detail = courseDetails[courseSelect.value];
   if(!detail){
     courseGuide.innerHTML = '<h3>コースはご相談ください</h3><p>ご予算や人数に合わせてご提案します。ご要望欄にご希望をご入力ください。</p>';
+    syncReservationAmount();
     return;
   }
   courseGuide.innerHTML = '<h3>' + courseSelect.value + '</h3>' +
@@ -311,18 +336,23 @@ function syncCourseFields(){
   const val = document.querySelector('input[name="rtype"]:checked').value;
   courseFields.classList.toggle('show', val === 'course');
   if(val === 'course'){
-    peopleInput.min = 3;
-    if(Number(peopleInput.value) < 3) peopleInput.value = 3;
+    const minimum = isFamilyCourse() ? 2 : 3;
+    peopleInput.min = minimum;
+    if(Number(peopleInput.value) < minimum) peopleInput.value = minimum;
   }else{
     peopleInput.min = 1;
   }
+  syncDrinkOptions();
+  syncReservationAmount();
 }
 typeGroup.addEventListener('change', syncCourseFields);
-courseSelect.addEventListener('change', syncCourseGuide);
+courseSelect.addEventListener('change', function(){ syncCourseFields(); syncCourseGuide(); });
 drinkSelect.addEventListener('change', syncReservationAmount);
 peopleInput.addEventListener('input', syncReservationAmount);
+dateInput.addEventListener('change', syncDecemberNotice);
 syncCourseFields();
 syncCourseGuide();
+syncDecemberNotice();
 
 const form = document.getElementById('reserveForm');
 const submitBtn = document.getElementById('submitBtn');
@@ -334,15 +364,21 @@ form.addEventListener('submit', function(e){
   const rtype = document.querySelector('input[name="rtype"]:checked').value;
   const people = Number(peopleInput.value);
   const detail = courseDetails[courseSelect.value];
-  if(rtype === 'course' && people < 3){
+  if(people < 1 || people > 45){
+    confirmBox.className = 'confirm show err';
+    confirmBox.innerHTML = '<p>人数は <b>1〜45名</b> の範囲で入力してください。</p>';
+    confirmBox.scrollIntoView({behavior:'smooth'});
+    return;
+  }
+  if(rtype === 'course' && !isFamilyCourse() && people < 3){
     confirmBox.className = 'confirm show err';
     confirmBox.innerHTML = '<p>コース料理は <b>3名様から</b> 承ります。</p>';
     confirmBox.scrollIntoView({behavior:'smooth'});
     return;
   }
-  if(rtype === 'course' && courseSelect.value === '家族コース' && people > 4){
+  if(rtype === 'course' && isFamilyCourse() && (people < 2 || people > 4)){
     confirmBox.className = 'confirm show err';
-    confirmBox.innerHTML = '<p>家族コースは <b>3〜4名様</b> 用です。5名様以上はほかのコースをお選びください。</p>';
+    confirmBox.innerHTML = '<p>家族コースは <b>2〜4名様</b> 用です。人数に合うコースをお選びください。</p>';
     confirmBox.scrollIntoView({behavior:'smooth'});
     return;
   }
