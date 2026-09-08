@@ -1,4 +1,4 @@
-<!-- 2026-09-08 12:06 変更済み -->
+<!-- 2026-09-08 09:49 変更済み -->
 <!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ご予約(お席・コース)｜福林楼</title>
 <meta name="description" content="福林楼のご予約ページです。お席のみのご予約から、コース料理のご予約まで承ります。">
@@ -68,6 +68,9 @@ textarea{resize:vertical;min-height:90px}
 .december-notice.show{display:block}.december-notice strong{display:block;margin-bottom:3px}
 #f_people{-moz-appearance:textfield}#f_people::-webkit-outer-spin-button,#f_people::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .seat-note{margin:0 0 14px;padding:11px 13px;background:#fff0e7;border-left:4px solid #d88f62;font-size:.84rem;color:#7c2a16}
+.seat-none{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:12px 14px;border:2px solid var(--g);background:#fff8eb;border-radius:4px;font-weight:700;color:var(--i);cursor:pointer}.seat-none input{width:auto}
+.seat-details{border:1px solid var(--l);background:#fff}.seat-details summary{padding:12px 14px;cursor:pointer;color:var(--r);font-weight:700}.seat-details[open] summary{border-bottom:1px solid var(--l)}.seat-details .seat-note{margin:14px}
+.seat-details-inner{padding:0 14px 14px}
 .seat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .seat-card{position:relative;display:block;margin:0;border:2px solid var(--l);background:#fff;cursor:pointer;overflow:hidden;border-radius:4px}
 .seat-card input{position:absolute;opacity:0}.seat-card img{display:block;width:100%;height:170px;object-fit:cover}.seat-card span{display:block;padding:8px 10px;font-size:.87rem;font-weight:700}
@@ -156,6 +159,7 @@ footer a{color:var(--p)}
             <select name="time" id="f_time" required>
               <option value="">選択してください</option>
             </select>
+            <p class="formnote">ご予約は午後の時間帯のみ承ります。当日のご予約は、希望時刻の1時間前までです。</p>
           </div>
         </div>
         <div class="december-notice" id="decemberNotice" role="status">
@@ -166,7 +170,7 @@ footer a{color:var(--p)}
 
       <fieldset id="courseFields">
         <legend>コース内容</legend>
-        <p class="course-note">福林コース・招福コースは<strong>3名様から</strong>、家族コースは<strong>2〜4名様</strong>で承ります。コース料理のご予約は17:30以降の時間帯をお選びください。</p>
+        <p class="course-note">福林コース・招福コースは<strong>3名様から</strong>、家族コースは<strong>2〜4名様</strong>で承ります。コース料理のご予約は午後の時間帯をお選びください。</p>
         <div class="row single"><div class="choice-emphasis">
             <label>ご希望のコース</label>
             <select name="course" id="f_course">
@@ -190,29 +194,33 @@ footer a{color:var(--p)}
 
       <fieldset>
         <legend>席のご希望</legend>
-        <p class="seat-note">ご希望の席をお選びください。混雑状況などにより、ご希望の席へご案内できない場合があります。あらかじめご了承ください。</p>
-        <div class="seat-grid" id="seatGrid">
-          <label class="seat-card">
-            <input type="radio" name="seat" value="円卓席" required>
-            <img src="images/round-table.jpg" alt="円卓席">
-            <span>円卓席</span>
-          </label>
-          <label class="seat-card">
-            <input type="radio" name="seat" value="お座敷席" required>
-            <img src="images/zashiki.jpg" alt="お座敷席">
-            <span>お座敷席</span>
-          </label>
-          <label class="seat-card">
-            <input type="radio" name="seat" value="小上がり座敷席" required>
-            <img src="images/small-zashiki.jpg" alt="小上がり座敷席">
-            <span>小上がり座敷席</span>
-          </label>
-          <label class="seat-card">
-            <input type="radio" name="seat" value="入口側テーブル席" required>
-            <img src="images/entrance-table.jpg" alt="入口側テーブル席">
-            <span>入口側テーブル席</span>
-          </label>
-        </div>
+        <label class="seat-none"><input type="radio" name="seat" value="特になし" checked> 特になし（おまかせ）</label>
+        <details class="seat-details">
+          <summary>席を選択する（タップして開く）</summary>
+          <p class="seat-note">混雑状況などにより、ご希望の席へご案内できない場合があります。あらかじめご了承ください。</p>
+          <div class="seat-details-inner"><div class="seat-grid" id="seatGrid">
+            <label class="seat-card">
+              <input type="radio" name="seat" value="円卓席">
+              <img src="images/round-table.jpg" alt="円卓席">
+              <span>円卓席</span>
+            </label>
+            <label class="seat-card">
+              <input type="radio" name="seat" value="お座敷席">
+              <img src="images/zashiki.jpg" alt="お座敷席">
+              <span>お座敷席</span>
+            </label>
+            <label class="seat-card">
+              <input type="radio" name="seat" value="小上がり座敷席">
+              <img src="images/small-zashiki.jpg" alt="小上がり座敷席">
+              <span>小上がり座敷席</span>
+            </label>
+            <label class="seat-card">
+              <input type="radio" name="seat" value="入口側テーブル席">
+              <img src="images/entrance-table.jpg" alt="入口側テーブル席">
+              <span>入口側テーブル席</span>
+            </label>
+          </div></div>
+        </details>
       </fieldset>
 
       <fieldset>
@@ -277,6 +285,7 @@ const timeSelect = document.getElementById('f_time');
 const dateInput = document.getElementById('f_date');
 const decemberNotice = document.getElementById('decemberNotice');
 const seatGrid = document.getElementById('seatGrid');
+const seatInputs = document.querySelectorAll('input[name="seat"]');
 const courseDetails = {
   '福林コース': {
     price: 'お一人様 3,000円',
@@ -332,7 +341,7 @@ function getReservationAmount(){
     total: courseAmount + drinkAmount,
     drinkLabel: drink.label,
     perPerson: people ? Math.round((courseAmount + drinkAmount) / people) : 0,
-    summary: '予約金額 ' + formatYen(courseAmount + drinkAmount) + ' ／ お一人あたり 約' + formatYen(people ? Math.round((courseAmount + drinkAmount) / people) : 0)
+    summary: 'お一人あたり 約' + formatYen(people ? Math.round((courseAmount + drinkAmount) / people) : 0) + ' ／ 合計 ' + formatYen(courseAmount + drinkAmount)
   };
 }
 function syncReservationAmount(){
@@ -341,25 +350,37 @@ function syncReservationAmount(){
     courseTotal.innerHTML = '<strong>予約金額：ご相談ください</strong>コースが未定の場合は、店舗からご案内します。';
     return;
   }
-  courseTotal.innerHTML = '<strong>予約金額（目安）：' + formatYen(amount.total) + '</strong>' +
-    'お一人あたり：約' + formatYen(amount.perPerson);
+  courseTotal.innerHTML = '<strong>お一人あたり：約' + formatYen(amount.perPerson) + '</strong>' +
+    '合計：' + formatYen(amount.total);
 }
-function addReservationTimes(startHour, startMinute, endHour, endMinute){
+function localDateString(date){
+  return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+}
+dateInput.min = localDateString(new Date());
+function addReservationTimes(startHour, startMinute, endHour, endMinute, canAdd){
   for(let minutes = startHour * 60 + startMinute; minutes <= endHour * 60 + endMinute; minutes += 30){
     const hour = String(Math.floor(minutes / 60)).padStart(2, '0');
     const minute = String(minutes % 60).padStart(2, '0');
     const value = hour + ':' + minute;
-    timeSelect.insertAdjacentHTML('beforeend', '<option value="' + value + '">' + value + '</option>');
+    if(!canAdd || canAdd(value)) timeSelect.insertAdjacentHTML('beforeend', '<option value="' + value + '">' + value + '</option>');
   }
 }
 function syncReservationTimes(){
   const selectedTime = timeSelect.value;
   timeSelect.innerHTML = '<option value="">選択してください</option>';
-  if(document.querySelector('input[name="rtype"]:checked').value === 'course'){
-    addReservationTimes(17, 30, 22, 0);
-  }else{
-    addReservationTimes(11, 30, 14, 0);
-    addReservationTimes(17, 30, 22, 0);
+  const now = new Date();
+  const earliest = new Date(now.getTime() + 60 * 60 * 1000);
+  const isToday = dateInput.value === localDateString(now);
+  addReservationTimes(13, 0, 14, 0, function(value){
+    const requestedAt = dateInput.value ? new Date(dateInput.value + 'T' + value + ':00') : null;
+    return !isToday || !requestedAt || requestedAt >= earliest;
+  });
+  addReservationTimes(17, 30, 22, 0, function(value){
+    const requestedAt = dateInput.value ? new Date(dateInput.value + 'T' + value + ':00') : null;
+    return !isToday || !requestedAt || requestedAt >= earliest;
+  });
+  if(timeSelect.options.length === 1 && isToday){
+    timeSelect.options[0].textContent = '本日は予約可能な時間がありません';
   }
   if(Array.from(timeSelect.options).some(function(option){ return option.value === selectedTime; })) timeSelect.value = selectedTime;
 }
@@ -394,15 +415,17 @@ typeGroup.addEventListener('change', syncCourseFields);
 courseSelect.addEventListener('change', function(){ syncCourseFields(); syncCourseGuide(); });
 drinkSelect.addEventListener('change', syncReservationAmount);
 peopleInput.addEventListener('input', syncReservationAmount);
-dateInput.addEventListener('change', syncDecemberNotice);
-seatGrid.addEventListener('change', function(){
+dateInput.addEventListener('change', function(){ syncDecemberNotice(); syncReservationTimes(); });
+function syncSeatCards(){
   document.querySelectorAll('.seat-card').forEach(function(card){
     card.classList.toggle('selected', card.querySelector('input').checked);
   });
-});
+}
+seatInputs.forEach(function(input){ input.addEventListener('change', syncSeatCards); });
 syncCourseFields();
 syncCourseGuide();
 syncDecemberNotice();
+syncSeatCards();
 
 const form = document.getElementById('reserveForm');
 const submitBtn = document.getElementById('submitBtn');
@@ -430,6 +453,13 @@ form.addEventListener('submit', function(e){
   if(rtype === 'course' && isFamilyCourse() && (people < 2 || people > 4)){
     confirmBox.className = 'confirm show err';
     confirmBox.innerHTML = '<p>家族コースは <b>2〜4名様</b> 用です。人数に合うコースをお選びください。</p>';
+    confirmBox.scrollIntoView({behavior:'smooth'});
+    return;
+  }
+  const requestedAt = new Date(dateInput.value + 'T' + timeSelect.value + ':00');
+  if(dateInput.value === localDateString(new Date()) && requestedAt < new Date(Date.now() + 60 * 60 * 1000)){
+    confirmBox.className = 'confirm show err';
+    confirmBox.innerHTML = '<p>当日のご予約は、希望時刻の <b>1時間前まで</b> にお願いいたします。</p>';
     confirmBox.scrollIntoView({behavior:'smooth'});
     return;
   }
@@ -466,6 +496,8 @@ form.addEventListener('submit', function(e){
       '<p>お急ぎの場合はお電話でお願いします <b>092-481-1369</b>（受付時間 11:30〜14:00、17:30〜22:00）</p>';
     form.reset();
     syncCourseFields();
+    syncDecemberNotice();
+    syncSeatCards();
     confirmBox.scrollIntoView({behavior:'smooth'});
   }).catch(function(err){
     confirmBox.className = 'confirm show err';
