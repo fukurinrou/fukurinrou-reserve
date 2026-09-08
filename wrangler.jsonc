@@ -1,0 +1,2 @@
+// 2026-09-08 23:55 変更済み
+{ "name": "fukurinrou-reserve", "main": "src/index.js", "compatibility_date": "2026-09-08", "assets": { "directory": "./public", "binding": "ASSETS" }, "d1_databases": [{ "binding": "DB", "database_name": "fukurinrou-osechi-db", "database_id": "c1057bce-b41c-40d4-80f2-c74217c8e02b" }] }

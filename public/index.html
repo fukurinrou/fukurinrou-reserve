@@ -1,0 +1,525 @@
+<!-- 2026-09-08 23:55 変更済み -->
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ご予約(お席・コース)｜福林楼</title>
+<meta name="description" content="福林楼のご予約ページです。お席のみのご予約から、コース料理のご予約まで承ります。">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+:root{--p:#f7f0e3;--w:#fffdfa;--i:#292017;--r:#8f2b1b;--g:#aa812d;--l:#dfd0b7}
+*{box-sizing:border-box}
+body{margin:0;background:var(--p);color:var(--i);font-family:"Noto Sans JP",sans-serif;line-height:1.8}
+.wrap{width:min(1040px,calc(100% - 28px));margin:auto}
+.bar{background:var(--r);color:#fff}
+.bar .wrap{min-height:62px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.brand{font:700 1.25rem "Noto Serif JP";text-decoration:none;color:#fff}
+.navlinks{display:flex;gap:8px}
+.toplink{color:#fff;text-decoration:none;border:1px solid #ffffff99;border-radius:3px;padding:6px 10px;font-size:.8rem}
+.toplink:hover{background:#ffffff22}
+.intro{padding:32px 0 20px;background:linear-gradient(90deg,#292017e8,#29201794),url("images/storefront.jpg") center/cover;color:#fff}
+.tag{color:#ffe0a1;font-size:.72rem;letter-spacing:.2em;font-weight:bold}
+.intro h1{font:700 clamp(1.8rem,5vw,2.6rem) "Noto Serif JP";margin:5px 0}
+.intro p{margin:0;color:#fff9ef;font-size:.9rem;max-width:36em}
+.notice{margin-top:16px;padding:12px 14px;border-left:4px solid var(--g);background:#fff9ef;font-size:.85rem}
+
+.tel-cta{
+  margin:36px 0 0;padding:18px 20px;background:var(--w);border:1px solid var(--l);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px
+}
+.tel-cta div b{font-family:"Noto Serif JP";font-size:1.05rem}
+.tel-cta a.callbtn{
+  background:var(--r);color:#fff;text-decoration:none;padding:11px 22px;
+  border-radius:3px;font-size:.9rem;white-space:nowrap
+}
+
+main{padding:30px 0 20px}
+.formbox{background:var(--w);border:1px solid var(--l);padding:28px 24px}
+fieldset{border:0;margin:0 0 28px;padding:0}
+fieldset legend{
+  font-family:"Noto Serif JP";font-weight:700;font-size:1.05rem;color:var(--r);
+  padding:0 0 10px;margin-bottom:14px;border-bottom:1px solid var(--l);width:100%
+}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.row.single{grid-template-columns:1fr}
+@media(max-width:600px){.row{grid-template-columns:1fr}}
+label{display:block;font-size:.82rem;color:#6b5c4d;margin-bottom:6px}
+label .req{color:var(--r);margin-left:3px}
+input,select,textarea{
+  width:100%;font:inherit;padding:10px 11px;border:1px solid var(--l);
+  background:var(--p);color:var(--i);border-radius:3px
+}
+textarea{resize:vertical;min-height:90px}
+.radio-group{display:flex;gap:16px;flex-wrap:wrap}
+.radio-group label{display:flex;align-items:center;gap:6px;font-size:.9rem;color:var(--i);margin-bottom:0}
+.radio-group input{width:auto}
+
+#courseFields{display:none}
+#courseFields.show{display:block}
+.course-guide{margin:12px 0 0;padding:16px 17px;background:#fff9ef;border-left:4px solid var(--g);font-size:.86rem}
+.course-guide h3{margin:0 0 6px;color:var(--r);font:700 1rem "Noto Serif JP"}
+.course-guide p{margin:4px 0}.course-guide ol{margin:8px 0 0;padding-left:1.45em}
+.course-guide .price{font-weight:700;color:var(--r);font-size:1rem}.course-guide .spicy{color:#b12817;font-weight:700}
+.course-note{margin:0 0 15px;font-size:.84rem;color:#67594c}
+.course-total{margin:12px 0 0;padding:13px 16px;background:#fff3dd;border-left:4px solid var(--r);font-size:.9rem}
+.course-total strong{display:block;color:var(--r);font-size:1.1rem}
+.choice-emphasis{padding:16px;border:2px solid var(--r);background:#fff8eb;border-radius:4px}
+.choice-emphasis label{font:700 1.02rem "Noto Serif JP";color:var(--r)}
+.choice-emphasis select{border:2px solid var(--g);background:#fff;font-weight:700}
+.december-notice{display:none;margin-top:14px;padding:13px 15px;background:#fff0e7;border:1px solid #d88f62;color:#7c2a16;font-size:.85rem}
+.december-notice.show{display:block}.december-notice strong{display:block;margin-bottom:3px}
+#f_people{-moz-appearance:textfield}#f_people::-webkit-outer-spin-button,#f_people::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.seat-note{margin:0 0 14px;padding:11px 13px;background:#fff0e7;border-left:4px solid #d88f62;font-size:.84rem;color:#7c2a16}
+.seat-none{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:12px 14px;border:2px solid var(--g);background:#fff8eb;border-radius:4px;font-weight:700;color:var(--i);cursor:pointer}.seat-none input{width:auto}
+.seat-details{border:1px solid var(--l);background:#fff}.seat-details summary{padding:12px 14px;cursor:pointer;color:var(--r);font-weight:700}.seat-details[open] summary{border-bottom:1px solid var(--l)}.seat-details .seat-note{margin:14px}
+.seat-details-inner{padding:0 14px 14px}
+.seat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.seat-card{position:relative;display:block;margin:0;border:2px solid var(--l);background:#fff;cursor:pointer;overflow:hidden;border-radius:4px}
+.seat-card input{position:absolute;opacity:0}.seat-card img{display:block;width:100%;height:170px;object-fit:cover}.seat-card span{display:block;padding:8px 10px;font-size:.87rem;font-weight:700}
+.seat-card.selected{border-color:var(--r);box-shadow:0 0 0 3px #8f2b1b22}.seat-card.selected span{background:#fff0e7;color:var(--r)}
+@media(max-width:600px){.seat-grid{grid-template-columns:1fr}.seat-card img{height:190px}}
+
+.submitrow{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:6px}
+button.submit{
+  background:var(--r);color:#fff;border:0;cursor:pointer;
+  padding:13px 34px;font:inherit;font-size:.95rem;border-radius:3px
+}
+button.submit:hover{background:#6e2013}
+button.submit:disabled{opacity:.6;cursor:default}
+.formnote{font-size:.8rem;color:#8a7a6a}
+
+.confirm{display:none;background:#fff9ef;border:1px solid #dec887;padding:20px;margin-top:20px;font-size:.9rem}
+.confirm.show{display:block}
+.confirm.err{background:#fbeceb;border-color:#dba39c}
+.confirm b{color:var(--r)}
+
+footer{background:var(--i);color:var(--p);padding:30px 0;margin-top:40px;font-size:.8rem}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+footer a{color:var(--p)}
+</style></head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="brand" href="./">福林楼</a>
+    <div class="navlinks">
+      <a class="toplink" href="./cancel.html">予約をキャンセル</a>
+    </div>
+  </div>
+</header>
+
+<section class="intro">
+  <div class="wrap">
+    <div class="tag">RESERVATION</div>
+    <h1>ご予約</h1>
+    <p>博多駅から徒歩約10分。お席のみのご予約から、コース料理のご予約まで承ります。ご希望の内容をお選びのうえ、フォームよりお申し込みください。</p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="formbox">
+    <form id="reserveForm">
+
+      <fieldset>
+        <legend>ご予約の種類</legend>
+        <div class="radio-group" id="typeGroup">
+          <label><input type="radio" name="rtype" value="seat" checked> お席のみ</label>
+          <label><input type="radio" name="rtype" value="course"> コース料理</label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>ご来店情報</legend>
+        <div class="row">
+          <div>
+            <label>お名前<span class="req">必須</span></label>
+            <input type="text" name="name" id="f_name" required>
+          </div>
+          <div>
+            <label>お電話番号<span class="req">必須</span></label>
+            <input type="tel" name="tel" id="f_tel" required>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>メールアドレス<span class="req">必須</span></label>
+            <input type="email" name="email" id="f_email" required placeholder="確認メールをお送りします">
+          </div>
+          <div>
+            <label>人数<span class="req">必須</span></label>
+            <input type="number" name="people" id="f_people" min="1" max="45" value="2" inputmode="numeric" required>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>ご希望日<span class="req">必須</span></label>
+            <input type="date" name="date" id="f_date" required>
+          </div>
+          <div>
+            <label>ご希望時間<span class="req">必須</span></label>
+            <select name="time" id="f_time" required>
+              <option value="">選択してください</option>
+            </select>
+            <p class="formnote">ご予約は午後の時間帯のみ承ります。当日のご予約は、希望時刻の1時間前までです。</p>
+          </div>
+        </div>
+        <div class="december-notice" id="decemberNotice" role="status">
+          <strong>12月にご予約のお客様へ</strong>
+          年末年始はご予約を承れない場合があります。その場合、080-3981-1369からお電話することがありますので、あらかじめご了承ください。
+        </div>
+      </fieldset>
+
+      <fieldset id="courseFields">
+        <legend>コース内容</legend>
+        <p class="course-note">福林コース・招福コースは<strong>3名様から</strong>、家族コースは<strong>2〜4名様</strong>で承ります。コース料理のご予約は午後の時間帯をお選びください。</p>
+        <div class="row single"><div class="choice-emphasis">
+            <label>ご希望のコース</label>
+            <select name="course" id="f_course">
+              <option value="福林コース">福林コース（お一人様 3,000円）</option>
+              <option value="招福コース">招福コース（お一人様 3,500円）</option>
+              <option value="家族コース">家族コース（2〜4名様 合計 5,800円）</option>
+              <option value="まだ決めていない・相談したい">まだ決めていない・相談したい</option>
+            </select>
+            <div class="course-guide" id="courseGuide" aria-live="polite"></div>
+        </div></div>
+        <div class="row single"><div class="choice-emphasis">
+            <label>飲み放題</label>
+            <select name="drink" id="f_drink">
+              <option value="none">希望しない（＋0円）</option>
+              <option value="alcohol">2時間飲み放題（お一人様＋2,000円／90分オーダーストップ）</option>
+              <option value="softdrink">ソフトドリンク飲み放題（お一人様＋500円）</option>
+            </select>
+            <div class="course-total" id="courseTotal" aria-live="polite"></div>
+        </div></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>席のご希望</legend>
+        <label class="seat-none"><input type="radio" name="seat" value="特になし" checked> 特になし（おまかせ）</label>
+        <details class="seat-details">
+          <summary>席を選択する（タップして開く）</summary>
+          <p class="seat-note">混雑状況などにより、ご希望の席へご案内できない場合があります。あらかじめご了承ください。</p>
+          <div class="seat-details-inner"><div class="seat-grid" id="seatGrid">
+            <label class="seat-card">
+              <input type="radio" name="seat" value="円卓席">
+              <img src="images/round-table.jpg" alt="円卓席">
+              <span>円卓席</span>
+            </label>
+            <label class="seat-card">
+              <input type="radio" name="seat" value="お座敷席">
+              <img src="images/zashiki.jpg" alt="お座敷席">
+              <span>お座敷席</span>
+            </label>
+            <label class="seat-card">
+              <input type="radio" name="seat" value="小上がり座敷席">
+              <img src="images/small-zashiki.jpg" alt="小上がり座敷席">
+              <span>小上がり座敷席</span>
+            </label>
+            <label class="seat-card">
+              <input type="radio" name="seat" value="入口側テーブル席">
+              <img src="images/entrance-table.jpg" alt="入口側テーブル席">
+              <span>入口側テーブル席</span>
+            </label>
+          </div></div>
+        </details>
+      </fieldset>
+
+      <fieldset>
+        <legend>ご要望</legend>
+        <div class="row single">
+          <div>
+            <label>アレルギー・苦手な食材、その他ご要望</label>
+            <textarea name="note" id="f_note" placeholder="例:海老アレルギーがあります／誕生日のお祝いで伺います　など"></textarea>
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="submitrow">
+        <button class="submit" type="submit" id="submitBtn">この内容で予約を送る</button>
+        <span class="formnote">送信後、自動で確認メールが届きます。内容確認のうえ店舗より折り返しご連絡する場合があります。</span>
+      </div>
+    </form>
+
+    <div class="confirm" id="confirmBox"></div>
+  </div>
+
+  <div class="tel-cta">
+    <div>お急ぎの場合はお電話でお願いします <b>092-481-1369</b>（受付時間 11:30〜14:00、17:30〜22:00）</div>
+    <a class="callbtn" href="tel:0924811369">電話で予約する</a>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>福林楼｜〒812-0016 福岡県福岡市博多区博多駅南3丁目7-14 岡元ビル</div>
+    <div><a href="tel:0924811369">092-481-1369</a></div>
+  </div>
+</footer>
+
+<!-- ===== メール自動送信の設定(EmailJSを使用) =====
+  1) https://www.emailjs.com/ で無料アカウントを作成
+  2) 「Email Services」でGmail等を接続 → SERVICE_ID を取得
+  3) 「Email Templates」を2つ作成
+       ・管理者宛(お店に届く予約通知メール) → ADMIN_TEMPLATE_ID
+       ・お客様宛(お客様に届く確認メール)   → CUSTOMER_TEMPLATE_ID
+       ※お客様宛テンプレートの「To email」欄には {{email}} を設定してください
+  4) 「Account」→「General」で Public Key を取得
+  5) 下の4つの定数に設定値を入力します
+========================================== -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+const EMAILJS_PUBLIC_KEY   = "4-GjeeGbTSMza_1ZT";
+const EMAILJS_SERVICE_ID   = "service_k70sla9";
+const EMAILJS_TEMPLATE_ADMIN    = "template_0tuz6oa";
+const EMAILJS_TEMPLATE_CUSTOMER = "template_j4q2ujf";
+
+emailjs.init(EMAILJS_PUBLIC_KEY);
+
+const typeGroup = document.getElementById('typeGroup');
+const courseFields = document.getElementById('courseFields');
+const courseSelect = document.getElementById('f_course');
+const courseGuide = document.getElementById('courseGuide');
+const drinkSelect = document.getElementById('f_drink');
+const courseTotal = document.getElementById('courseTotal');
+const peopleInput = document.getElementById('f_people');
+const timeSelect = document.getElementById('f_time');
+const dateInput = document.getElementById('f_date');
+const decemberNotice = document.getElementById('decemberNotice');
+const seatGrid = document.getElementById('seatGrid');
+const seatInputs = document.querySelectorAll('input[name="seat"]');
+const courseDetails = {
+  '福林コース': {
+    price: 'お一人様 3,000円',
+    baseAmount: 3000,
+    priceType: 'perPerson',
+    dishes: ['前菜4種', 'エビチリソース <span class="spicy">🌶️</span>', '我が家の酢豚', '揚げ物2種（鶏唐揚げ・春巻き）', '手作り焼き餃子', 'マーボー豆腐 <span class="spicy">🌶️🌶️🌶️</span>', 'チャーハン', '玉子スープ', '日替わりデザート']
+  },
+  '招福コース': {
+    price: 'お一人様 3,500円',
+    baseAmount: 3500,
+    priceType: 'perPerson',
+    dishes: ['前菜5種', '大きなエビチリソース <span class="spicy">🌶️</span>', '我が家の酢豚', '揚げ物2種（鶏唐揚げ・春巻き）', '手作り焼き餃子', '海鮮三種炒め', 'ピーマンと牛肉の炒め', 'チャーハン', 'フカヒレスープ', '日替わりデザート']
+  },
+  '家族コース': {
+    price: '2〜4名様 合計 5,800円',
+    baseAmount: 5800,
+    priceType: 'fixed',
+    dishes: ['前菜3種', '油淋鶏（揚げ鶏肉のネギ醤油かけ）', 'チャーハン', 'マーボー豆腐 <span class="spicy">🌶️🌶️🌶️</span>', 'エビのチリソース炒め <span class="spicy">🌶️</span>', '焼き餃子', '玉子スープ']
+  }
+};
+const drinkPlans = {
+  none: { label: '希望しない', perPerson: 0 },
+  alcohol: { label: '2時間飲み放題（90分オーダーストップ）', perPerson: 2000 },
+  softdrink: { label: 'ソフトドリンク飲み放題', perPerson: 500 }
+};
+function formatYen(amount){ return '￥' + amount.toLocaleString('ja-JP'); }
+function isFamilyCourse(){ return courseSelect.value === '家族コース'; }
+function getDrinkPlan(){
+  const plan = drinkPlans[drinkSelect.value];
+  return drinkSelect.value === 'alcohol' && isFamilyCourse()
+    ? { label: plan.label, perPerson: 2500 }
+    : plan;
+}
+function syncDrinkOptions(){
+  document.querySelector('#f_drink option[value="alcohol"]').textContent = isFamilyCourse()
+    ? '2時間飲み放題（お一人様＋2,500円／90分オーダーストップ）'
+    : '2時間飲み放題（お一人様＋2,000円／90分オーダーストップ）';
+}
+function syncDecemberNotice(){
+  const month = dateInput.value ? Number(dateInput.value.split('-')[1]) : 0;
+  decemberNotice.classList.toggle('show', month === 12);
+}
+function getReservationAmount(){
+  const detail = courseDetails[courseSelect.value];
+  if(!detail) return null;
+  const people = Number(peopleInput.value) || 0;
+  const drink = getDrinkPlan();
+  const courseAmount = detail.priceType === 'perPerson' ? detail.baseAmount * people : detail.baseAmount;
+  const drinkAmount = drink.perPerson * people;
+  return {
+    courseAmount: courseAmount,
+    drinkAmount: drinkAmount,
+    total: courseAmount + drinkAmount,
+    drinkLabel: drink.label,
+    perPerson: people ? Math.round((courseAmount + drinkAmount) / people) : 0,
+    summary: 'お一人あたり 約' + formatYen(people ? Math.round((courseAmount + drinkAmount) / people) : 0) + ' ／ 合計 ' + formatYen(courseAmount + drinkAmount)
+  };
+}
+function syncReservationAmount(){
+  const amount = getReservationAmount();
+  if(!amount){
+    courseTotal.innerHTML = '<strong>予約金額：ご相談ください</strong>コースが未定の場合は、店舗からご案内します。';
+    return;
+  }
+  courseTotal.innerHTML = '<strong>お一人あたり：約' + formatYen(amount.perPerson) + '</strong>' +
+    '合計：' + formatYen(amount.total);
+}
+function localDateString(date){
+  return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+}
+dateInput.min = localDateString(new Date());
+function addReservationTimes(startHour, startMinute, endHour, endMinute, canAdd){
+  for(let minutes = startHour * 60 + startMinute; minutes <= endHour * 60 + endMinute; minutes += 30){
+    const hour = String(Math.floor(minutes / 60)).padStart(2, '0');
+    const minute = String(minutes % 60).padStart(2, '0');
+    const value = hour + ':' + minute;
+    if(!canAdd || canAdd(value)) timeSelect.insertAdjacentHTML('beforeend', '<option value="' + value + '">' + value + '</option>');
+  }
+}
+function syncReservationTimes(){
+  const selectedTime = timeSelect.value;
+  timeSelect.innerHTML = '<option value="">選択してください</option>';
+  const now = new Date();
+  const earliest = new Date(now.getTime() + 60 * 60 * 1000);
+  const isToday = dateInput.value === localDateString(now);
+  addReservationTimes(13, 0, 14, 0, function(value){
+    const requestedAt = dateInput.value ? new Date(dateInput.value + 'T' + value + ':00') : null;
+    return !isToday || !requestedAt || requestedAt >= earliest;
+  });
+  addReservationTimes(17, 30, 22, 0, function(value){
+    const requestedAt = dateInput.value ? new Date(dateInput.value + 'T' + value + ':00') : null;
+    return !isToday || !requestedAt || requestedAt >= earliest;
+  });
+  if(timeSelect.options.length === 1 && isToday){
+    timeSelect.options[0].textContent = '本日は予約可能な時間がありません';
+  }
+  if(Array.from(timeSelect.options).some(function(option){ return option.value === selectedTime; })) timeSelect.value = selectedTime;
+}
+function syncCourseGuide(){
+  const detail = courseDetails[courseSelect.value];
+  if(!detail){
+    courseGuide.innerHTML = '<h3>コースはご相談ください</h3><p>ご予算や人数に合わせてご提案します。ご要望欄にご希望をご入力ください。</p>';
+    syncReservationAmount();
+    return;
+  }
+  courseGuide.innerHTML = '<h3>' + courseSelect.value + '</h3>' +
+    '<p class="price">' + detail.price + '</p>' +
+    '<p>お料理内容</p><ol><li>' + detail.dishes.join('</li><li>') + '</li></ol>' +
+    '<p>飲み放題は下でお選びください。</p>';
+  syncReservationAmount();
+}
+function syncCourseFields(){
+  const val = document.querySelector('input[name="rtype"]:checked').value;
+  courseFields.classList.toggle('show', val === 'course');
+  if(val === 'course'){
+    const minimum = isFamilyCourse() ? 2 : 3;
+    peopleInput.min = minimum;
+    if(Number(peopleInput.value) < minimum) peopleInput.value = minimum;
+  }else{
+    peopleInput.min = 1;
+  }
+  syncDrinkOptions();
+  syncReservationAmount();
+  syncReservationTimes();
+}
+typeGroup.addEventListener('change', syncCourseFields);
+courseSelect.addEventListener('change', function(){ syncCourseFields(); syncCourseGuide(); });
+drinkSelect.addEventListener('change', syncReservationAmount);
+peopleInput.addEventListener('input', syncReservationAmount);
+dateInput.addEventListener('change', function(){ syncDecemberNotice(); syncReservationTimes(); });
+function syncSeatCards(){
+  document.querySelectorAll('.seat-card').forEach(function(card){
+    card.classList.toggle('selected', card.querySelector('input').checked);
+  });
+}
+seatInputs.forEach(function(input){ input.addEventListener('change', syncSeatCards); });
+syncCourseFields();
+syncCourseGuide();
+syncDecemberNotice();
+syncSeatCards();
+
+const form = document.getElementById('reserveForm');
+const submitBtn = document.getElementById('submitBtn');
+const confirmBox = document.getElementById('confirmBox');
+
+form.addEventListener('submit', function(e){
+  e.preventDefault();
+
+  const rtype = document.querySelector('input[name="rtype"]:checked').value;
+  const people = Number(peopleInput.value);
+  const detail = courseDetails[courseSelect.value];
+  const selectedSeat = document.querySelector('input[name="seat"]:checked');
+  if(people < 1 || people > 45){
+    confirmBox.className = 'confirm show err';
+    confirmBox.innerHTML = '<p>人数は <b>1〜45名</b> の範囲で入力してください。</p>';
+    confirmBox.scrollIntoView({behavior:'smooth'});
+    return;
+  }
+  if(rtype === 'course' && !isFamilyCourse() && people < 3){
+    confirmBox.className = 'confirm show err';
+    confirmBox.innerHTML = '<p>コース料理は <b>3名様から</b> 承ります。</p>';
+    confirmBox.scrollIntoView({behavior:'smooth'});
+    return;
+  }
+  if(rtype === 'course' && isFamilyCourse() && (people < 2 || people > 4)){
+    confirmBox.className = 'confirm show err';
+    confirmBox.innerHTML = '<p>家族コースは <b>2〜4名様</b> 用です。人数に合うコースをお選びください。</p>';
+    confirmBox.scrollIntoView({behavior:'smooth'});
+    return;
+  }
+  const requestedAt = new Date(dateInput.value + 'T' + timeSelect.value + ':00');
+  if(dateInput.value === localDateString(new Date()) && requestedAt < new Date(Date.now() + 60 * 60 * 1000)){
+    confirmBox.className = 'confirm show err';
+    confirmBox.innerHTML = '<p>当日のご予約は、希望時刻の <b>1時間前まで</b> にお願いいたします。</p>';
+    confirmBox.scrollIntoView({behavior:'smooth'});
+    return;
+  }
+  const reservationAmount = rtype === 'course' ? getReservationAmount() : null;
+  const params = {
+    rtype: rtype === 'course' ? 'コース料理' : 'お席のみ',
+    name: document.getElementById('f_name').value,
+    tel: document.getElementById('f_tel').value,
+    email: document.getElementById('f_email').value,
+    people: people,
+    date: document.getElementById('f_date').value,
+    time: document.getElementById('f_time').value,
+    room: selectedSeat ? selectedSeat.value : '-',
+    seat: selectedSeat ? selectedSeat.value : '-',
+    course: rtype === 'course' ? document.getElementById('f_course').value : '-',
+    course_price: reservationAmount ? reservationAmount.summary : '-',
+    course_dishes: rtype === 'course' && detail ? detail.dishes.map(function(d){ return d.replace(/<[^>]+>/g, ''); }).join(' / ') : '-',
+    drink_plan: reservationAmount ? reservationAmount.drinkLabel : '-',
+    reservation_amount: reservationAmount ? formatYen(reservationAmount.total) : '-',
+    budget: '',
+    note: document.getElementById('f_note').value
+  };
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = '送信中...';
+
+  fetch('/api/reservations', {
+    method: 'POST',
+    headers: {'content-type': 'application/json'},
+    body: JSON.stringify(params)
+  }).then(function(response){
+    return response.json().then(function(payload){
+      if(!response.ok) throw new Error(payload.error || '予約を受け付けられませんでした。');
+      return payload;
+    });
+  }).then(function(payload){
+    return Promise.allSettled([
+      emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ADMIN, params),
+      emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CUSTOMER, params)
+    ]).then(function(){ return payload; });
+  }).then(function(payload){
+    confirmBox.className = 'confirm show';
+    confirmBox.innerHTML =
+      '<p>ご予約希望を受け付けました。受付番号：<b>' + payload.publicRef + '</b></p>' +
+      '<p>ご入力のメールアドレスに確認メールをお送りしました。</p>' +
+      '<p>お急ぎの場合はお電話でお願いします <b>092-481-1369</b>（受付時間 11:30〜14:00、17:30〜22:00）</p>';
+    form.reset();
+    syncCourseFields();
+    syncDecemberNotice();
+    syncSeatCards();
+    confirmBox.scrollIntoView({behavior:'smooth'});
+  }).catch(function(err){
+    confirmBox.className = 'confirm show err';
+    confirmBox.innerHTML =
+      '<p>申し訳ございません。' + (err && err.message ? err.message : '送信に失敗しました。') + ' お急ぎの場合はお電話でお願いします <b>092-481-1369</b>（受付時間 11:30〜14:00、17:30〜22:00）</p>';
+    confirmBox.scrollIntoView({behavior:'smooth'});
+    console.error(err);
+  }).finally(function(){
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'この内容で予約を送る';
+  });
+});
+</script>
+
+</body></html>
