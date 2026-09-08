@@ -1,8 +1,8 @@
-<!-- 2026-09-08 15:43 変更済み -->
+<!-- 2026-09-08 12:06 変更済み -->
 <!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ご予約(お席・コース)｜福林楼</title>
 <meta name="description" content="福林楼のご予約ページです。お席のみのご予約から、コース料理のご予約まで承ります。">
-<link rel="canonical" href="https://fukurinrou.github.io/fukurinrou-hp/reserve.html">
+<link rel="canonical" href="https://fukurinrou.github.io/fukurinrou-reserve/reserve.html">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
 :root{--p:#f7f0e3;--w:#fffdfa;--i:#292017;--r:#8f2b1b;--g:#aa812d;--l:#dfd0b7}
@@ -15,10 +15,10 @@ body{margin:0;background:var(--p);color:var(--i);font-family:"Noto Sans JP",sans
 .navlinks{display:flex;gap:8px}
 .toplink{color:#fff;text-decoration:none;border:1px solid #ffffff99;border-radius:3px;padding:6px 10px;font-size:.8rem}
 .toplink:hover{background:#ffffff22}
-.intro{padding:32px 0 20px}
-.tag{color:var(--r);font-size:.72rem;letter-spacing:.2em;font-weight:bold}
+.intro{padding:32px 0 20px;background:linear-gradient(90deg,#292017e8,#29201794),url("images/storefront.jpg") center/cover;color:#fff}
+.tag{color:#ffe0a1;font-size:.72rem;letter-spacing:.2em;font-weight:bold}
 .intro h1{font:700 clamp(1.8rem,5vw,2.6rem) "Noto Serif JP";margin:5px 0}
-.intro p{margin:0;color:#67594c;font-size:.9rem;max-width:36em}
+.intro p{margin:0;color:#fff9ef;font-size:.9rem;max-width:36em}
 .notice{margin-top:16px;padding:12px 14px;border-left:4px solid var(--g);background:#fff9ef;font-size:.85rem}
 
 .tel-cta{
@@ -67,6 +67,12 @@ textarea{resize:vertical;min-height:90px}
 .december-notice{display:none;margin-top:14px;padding:13px 15px;background:#fff0e7;border:1px solid #d88f62;color:#7c2a16;font-size:.85rem}
 .december-notice.show{display:block}.december-notice strong{display:block;margin-bottom:3px}
 #f_people{-moz-appearance:textfield}#f_people::-webkit-outer-spin-button,#f_people::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.seat-note{margin:0 0 14px;padding:11px 13px;background:#fff0e7;border-left:4px solid #d88f62;font-size:.84rem;color:#7c2a16}
+.seat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.seat-card{position:relative;display:block;margin:0;border:2px solid var(--l);background:#fff;cursor:pointer;overflow:hidden;border-radius:4px}
+.seat-card input{position:absolute;opacity:0}.seat-card img{display:block;width:100%;height:170px;object-fit:cover}.seat-card span{display:block;padding:8px 10px;font-size:.87rem;font-weight:700}
+.seat-card.selected{border-color:var(--r);box-shadow:0 0 0 3px #8f2b1b22}.seat-card.selected span{background:#fff0e7;color:var(--r)}
+@media(max-width:600px){.seat-grid{grid-template-columns:1fr}.seat-card img{height:190px}}
 
 .submitrow{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:6px}
 button.submit{
@@ -102,7 +108,7 @@ footer a{color:var(--p)}
   <div class="wrap">
     <div class="tag">RESERVATION</div>
     <h1>ご予約</h1>
-    <p>お席のみのご予約から、コース料理のご予約まで承ります。ご希望の内容をお選びのうえ、フォームよりお申し込みください。</p>
+    <p>博多駅から徒歩約10分。お席のみのご予約から、コース料理のご予約まで承ります。ご希望の内容をお選びのうえ、フォームよりお申し込みください。</p>
   </div>
 </section>
 
@@ -160,7 +166,7 @@ footer a{color:var(--p)}
 
       <fieldset id="courseFields">
         <legend>コース内容</legend>
-        <p class="course-note">福林コース・招福コースは<strong>3名様から</strong>、家族コースは<strong>2〜4名様</strong>で承ります。</p>
+        <p class="course-note">福林コース・招福コースは<strong>3名様から</strong>、家族コースは<strong>2〜4名様</strong>で承ります。コース料理のご予約は17:30以降の時間帯をお選びください。</p>
         <div class="row single"><div class="choice-emphasis">
             <label>ご希望のコース</label>
             <select name="course" id="f_course">
@@ -180,6 +186,33 @@ footer a{color:var(--p)}
             </select>
             <div class="course-total" id="courseTotal" aria-live="polite"></div>
         </div></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>席のご希望</legend>
+        <p class="seat-note">ご希望の席をお選びください。混雑状況などにより、ご希望の席へご案内できない場合があります。あらかじめご了承ください。</p>
+        <div class="seat-grid" id="seatGrid">
+          <label class="seat-card">
+            <input type="radio" name="seat" value="円卓席" required>
+            <img src="images/round-table.jpg" alt="円卓席">
+            <span>円卓席</span>
+          </label>
+          <label class="seat-card">
+            <input type="radio" name="seat" value="お座敷席" required>
+            <img src="images/zashiki.jpg" alt="お座敷席">
+            <span>お座敷席</span>
+          </label>
+          <label class="seat-card">
+            <input type="radio" name="seat" value="小上がり座敷席" required>
+            <img src="images/small-zashiki.jpg" alt="小上がり座敷席">
+            <span>小上がり座敷席</span>
+          </label>
+          <label class="seat-card">
+            <input type="radio" name="seat" value="入口側テーブル席" required>
+            <img src="images/entrance-table.jpg" alt="入口側テーブル席">
+            <span>入口側テーブル席</span>
+          </label>
+        </div>
       </fieldset>
 
       <fieldset>
@@ -243,12 +276,13 @@ const peopleInput = document.getElementById('f_people');
 const timeSelect = document.getElementById('f_time');
 const dateInput = document.getElementById('f_date');
 const decemberNotice = document.getElementById('decemberNotice');
+const seatGrid = document.getElementById('seatGrid');
 const courseDetails = {
   '福林コース': {
     price: 'お一人様 3,000円',
     baseAmount: 3000,
     priceType: 'perPerson',
-    dishes: ['前菜4種', 'エビチリソース <span class="spicy">🌶️</span>', '我が家の酢豚', '揚げ物2種（鶏唐揚げ・春巻き）', '手作り焼き餃子', 'マーボー豆腐 <span class="spicy">🌶️</span>', 'チャーハン', '玉子スープ', '日替わりデザート']
+    dishes: ['前菜4種', 'エビチリソース <span class="spicy">🌶️</span>', '我が家の酢豚', '揚げ物2種（鶏唐揚げ・春巻き）', '手作り焼き餃子', 'マーボー豆腐 <span class="spicy">🌶️🌶️🌶️</span>', 'チャーハン', '玉子スープ', '日替わりデザート']
   },
   '招福コース': {
     price: 'お一人様 3,500円',
@@ -260,7 +294,7 @@ const courseDetails = {
     price: '2〜4名様 合計 5,800円',
     baseAmount: 5800,
     priceType: 'fixed',
-    dishes: ['前菜3種', '油淋鶏（揚げ鶏肉のネギ醤油かけ）', 'チャーハン', 'マーボー豆腐 <span class="spicy">🌶️</span>', 'エビのチリソース炒め <span class="spicy">🌶️</span>', '焼き餃子', '玉子スープ']
+    dishes: ['前菜3種', '油淋鶏（揚げ鶏肉のネギ醤油かけ）', 'チャーハン', 'マーボー豆腐 <span class="spicy">🌶️🌶️🌶️</span>', 'エビのチリソース炒め <span class="spicy">🌶️</span>', '焼き餃子', '玉子スープ']
   }
 };
 const drinkPlans = {
@@ -297,7 +331,8 @@ function getReservationAmount(){
     drinkAmount: drinkAmount,
     total: courseAmount + drinkAmount,
     drinkLabel: drink.label,
-    summary: 'コース料金 ' + formatYen(courseAmount) + ' ／ ' + drink.label + ' ' + formatYen(drinkAmount) + ' ／ 予約金額 ' + formatYen(courseAmount + drinkAmount)
+    perPerson: people ? Math.round((courseAmount + drinkAmount) / people) : 0,
+    summary: '予約金額 ' + formatYen(courseAmount + drinkAmount) + ' ／ お一人あたり 約' + formatYen(people ? Math.round((courseAmount + drinkAmount) / people) : 0)
   };
 }
 function syncReservationAmount(){
@@ -307,18 +342,27 @@ function syncReservationAmount(){
     return;
   }
   courseTotal.innerHTML = '<strong>予約金額（目安）：' + formatYen(amount.total) + '</strong>' +
-    'コース料金 ' + formatYen(amount.courseAmount) + ' ＋ ' + amount.drinkLabel + ' ' + formatYen(amount.drinkAmount);
+    'お一人あたり：約' + formatYen(amount.perPerson);
 }
 function addReservationTimes(startHour, startMinute, endHour, endMinute){
-  for(let minutes = startHour * 60 + startMinute; minutes <= endHour * 60 + endMinute; minutes += 10){
+  for(let minutes = startHour * 60 + startMinute; minutes <= endHour * 60 + endMinute; minutes += 30){
     const hour = String(Math.floor(minutes / 60)).padStart(2, '0');
     const minute = String(minutes % 60).padStart(2, '0');
     const value = hour + ':' + minute;
     timeSelect.insertAdjacentHTML('beforeend', '<option value="' + value + '">' + value + '</option>');
   }
 }
-addReservationTimes(11, 30, 14, 0);
-addReservationTimes(17, 30, 22, 0);
+function syncReservationTimes(){
+  const selectedTime = timeSelect.value;
+  timeSelect.innerHTML = '<option value="">選択してください</option>';
+  if(document.querySelector('input[name="rtype"]:checked').value === 'course'){
+    addReservationTimes(17, 30, 22, 0);
+  }else{
+    addReservationTimes(11, 30, 14, 0);
+    addReservationTimes(17, 30, 22, 0);
+  }
+  if(Array.from(timeSelect.options).some(function(option){ return option.value === selectedTime; })) timeSelect.value = selectedTime;
+}
 function syncCourseGuide(){
   const detail = courseDetails[courseSelect.value];
   if(!detail){
@@ -344,12 +388,18 @@ function syncCourseFields(){
   }
   syncDrinkOptions();
   syncReservationAmount();
+  syncReservationTimes();
 }
 typeGroup.addEventListener('change', syncCourseFields);
 courseSelect.addEventListener('change', function(){ syncCourseFields(); syncCourseGuide(); });
 drinkSelect.addEventListener('change', syncReservationAmount);
 peopleInput.addEventListener('input', syncReservationAmount);
 dateInput.addEventListener('change', syncDecemberNotice);
+seatGrid.addEventListener('change', function(){
+  document.querySelectorAll('.seat-card').forEach(function(card){
+    card.classList.toggle('selected', card.querySelector('input').checked);
+  });
+});
 syncCourseFields();
 syncCourseGuide();
 syncDecemberNotice();
@@ -364,6 +414,7 @@ form.addEventListener('submit', function(e){
   const rtype = document.querySelector('input[name="rtype"]:checked').value;
   const people = Number(peopleInput.value);
   const detail = courseDetails[courseSelect.value];
+  const selectedSeat = document.querySelector('input[name="seat"]:checked');
   if(people < 1 || people > 45){
     confirmBox.className = 'confirm show err';
     confirmBox.innerHTML = '<p>人数は <b>1〜45名</b> の範囲で入力してください。</p>';
@@ -391,7 +442,8 @@ form.addEventListener('submit', function(e){
     people: people,
     date: document.getElementById('f_date').value,
     time: document.getElementById('f_time').value,
-    room: '',
+    room: selectedSeat ? selectedSeat.value : '-',
+    seat: selectedSeat ? selectedSeat.value : '-',
     course: rtype === 'course' ? document.getElementById('f_course').value : '-',
     course_price: reservationAmount ? reservationAmount.summary : '-',
     course_dishes: rtype === 'course' && detail ? detail.dishes.map(function(d){ return d.replace(/<[^>]+>/g, ''); }).join(' / ') : '-',
