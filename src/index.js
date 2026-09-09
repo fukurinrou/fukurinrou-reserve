@@ -1,4 +1,4 @@
-// 2026-09-09 11:20 変更済み
+// 2026-09-09 14:30 変更済み
 const headers = { "content-type": "application/json; charset=utf-8" };
 
 const defaultCourseSettings = {
@@ -42,7 +42,7 @@ function validTime(value) {
 function normalizeSettings(value) {
   const source = value && typeof value === "object" ? value : {};
   const rawCourses = Array.isArray(source.courses) ? source.courses : [];
-  const courses = rawCourses.slice(0, 6).map((item, index) => {
+  const courses = rawCourses.slice(0, 10).map((item, index) => {
     const fallback = defaultCourseSettings.courses[index] || defaultCourseSettings.courses[0];
     const row = item && typeof item === "object" ? item : {};
     const minPeople = number(row.minPeople, fallback.minPeople, 1, 45);
