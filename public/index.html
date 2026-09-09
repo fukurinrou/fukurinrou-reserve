@@ -479,9 +479,12 @@ form.addEventListener('submit', function(e){
     reservation_amount: reservationAmount ? formatYen(reservationAmount.total) : '-',
     budget: '',
     note: document.getElementById('f_note').value,
-    cancel_url: window.location.origin + '/cancel.html',
+    title: 'ご予約希望を受け付けました',
+    action_url: window.location.origin + '/cancel.html',
+    action_label: 'ご予約をキャンセルする',
+    action_note: 'ご予約内容の変更・キャンセルは、下のボタンからお手続きいただけます。',
     subject: '【福林楼】予約希望を受け付けました',
-    message: '予約希望を受け付けました。\n受付内容：' + (rtype === 'course' ? 'コース料理' : 'お席のみ') + '\nご来店日時：' + document.getElementById('f_date').value + ' ' + document.getElementById('f_time').value + '\n人数：' + people + '名\n席の希望：' + (selectedSeat ? selectedSeat.value : '特になし') + '\n予約をキャンセルする場合：' + window.location.origin + '/cancel.html'
+    message: 'このたびは福林楼へご予約いただき、誠にありがとうございます。\n\n以下の内容で、ご予約希望を承りました。\n\n【ご予約内容】\nご予約の種類：' + (rtype === 'course' ? 'コース料理' : 'お席のみ') + '\nご来店日時：' + document.getElementById('f_date').value + ' ' + document.getElementById('f_time').value + '\n人数：' + people + '名\nお席のご希望：' + (selectedSeat ? selectedSeat.value : '特になし') + '\n\n店舗にて内容を確認後、必要に応じてご連絡いたします。'
   };
 
   submitBtn.disabled = true;
@@ -500,12 +503,17 @@ form.addEventListener('submit', function(e){
     return Promise.allSettled([
       emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ADMIN, params),
       emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CUSTOMER, params)
-    ]).then(function(){ return payload; });
-  }).then(function(payload){
+    ]).then(function(results){
+      return {payload: payload, mailSent: results.every(function(result){ return result.status === 'fulfilled'; })};
+    });
+  }).then(function(result){
+    var payload = result.payload;
     confirmBox.className = 'confirm show';
     confirmBox.innerHTML =
       '<p>ご予約希望を受け付けました。受付番号：<b>' + payload.publicRef + '</b></p>' +
-      '<p>ご入力のメールアドレスに確認メールをお送りしました。</p>' +
+      (result.mailSent
+        ? '<p>ご入力のメールアドレスに確認メールをお送りしました。</p>'
+        : '<p>ご予約は受け付けましたが、確認メールを送信できませんでした。お手数ですが、店舗までお電話ください。</p>') +
       '<p>お急ぎの場合はお電話でお願いします <b>092-481-1369</b>（受付時間 11:30〜14:00、17:30〜22:00）</p>';
     form.reset();
     syncCourseFields();

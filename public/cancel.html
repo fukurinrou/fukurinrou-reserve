@@ -1,2 +1,155 @@
-<!-- 2026-09-09 10:25 変更済み -->
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>予約キャンセル｜福林楼</title><style>body{margin:0;background:#f7f0e3;color:#292017;font-family:system-ui,"Noto Sans JP",sans-serif;line-height:1.7}.wrap{width:min(650px,calc(100% - 30px));margin:45px auto}.card{padding:28px;background:#fffdfa;border:1px solid #dfd0b7}.brand{color:#8f2b1b;font-weight:700;text-decoration:none}h1{font-size:1.7rem;color:#8f2b1b}label{display:block;margin:16px 0 5px;font-weight:700}input{box-sizing:border-box;width:100%;padding:11px;border:1px solid #dfd0b7;font:inherit}button{margin-top:22px;background:#8f2b1b;color:#fff;border:0;padding:13px 22px;font:inherit;cursor:pointer}.notice{margin-top:18px;padding:13px;background:#fff3dd}.back{display:inline-block;margin-top:20px;color:#8f2b1b}</style></head><body><main class="wrap"><a class="brand" href="./">福林楼</a><section class="card"><h1>予約キャンセル</h1><p>予約時に入力した、お名前・メールアドレス・電話番号がすべて一致するとキャンセルできます。</p><form id="cancelForm"><label>お名前<input id="name" required></label><label>メールアドレス<input id="email" type="email" required></label><label>電話番号<input id="phone" type="tel" required></label><button id="cancelButton">予約をキャンセルする</button></form><div class="notice" id="result" hidden></div><a class="back" href="./">予約ページへ戻る</a></section></main><script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script><script>const EMAILJS_PUBLIC_KEY='4-GjeeGbTSMza_1ZT',EMAILJS_SERVICE_ID='service_k70sla9',EMAILJS_TEMPLATE_ADMIN='template_0tuz6oa',EMAILJS_TEMPLATE_CUSTOMER='template_j4q2ujf';emailjs.init(EMAILJS_PUBLIC_KEY);document.getElementById('cancelForm').addEventListener('submit',async e=>{e.preventDefault();const r=document.getElementById('result'),b=document.getElementById('cancelButton'),name=document.getElementById('name').value,email=document.getElementById('email').value,tel=document.getElementById('phone').value;r.hidden=false;r.textContent='確認しています…';b.disabled=true;try{const x=await fetch('/api/cancellations',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name,email,tel})});const j=await x.json();if(!x.ok){r.textContent=j.error||'キャンセルできませんでした。';return}const p={name,email,tel,rtype:'予約キャンセル',title:'予約キャンセル',subject:'【福林楼】予約キャンセルを受け付けました',message:'予約をキャンセルしました。\n受付番号：'+j.publicRef+'\nお名前：'+name+'\n電話番号：'+tel+'\n店舗：福林楼（092-481-1369）',public_ref:j.publicRef};const mail=await Promise.allSettled([emailjs.send(EMAILJS_SERVICE_ID,EMAILJS_TEMPLATE_ADMIN,p),emailjs.send(EMAILJS_SERVICE_ID,EMAILJS_TEMPLATE_CUSTOMER,p)]);r.textContent=mail.every(x=>x.status==='fulfilled')?'予約（'+j.publicRef+'）をキャンセルしました。店舗とお客様へキャンセル確認メールを送りました。':'予約（'+j.publicRef+'）をキャンセルしました。メール送信に失敗したため、店舗へお電話ください。'}catch{r.textContent='通信できませんでした。お電話でご連絡ください。'}finally{b.disabled=false}})</script></body></html>
+<!-- 2026-09-09 10:45 変更済み -->
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ご予約のキャンセル｜中国料理 福林楼</title>
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f7f0e3; color: #292017; font-family: system-ui, -apple-system, "Noto Sans JP", sans-serif; line-height: 1.75; }
+    .header { background: #8f2b1b; color: #fff; }
+    .header-inner { width: min(760px, calc(100% - 32px)); margin: 0 auto; padding: 18px 0; }
+    .brand { color: inherit; font-size: 1.1rem; font-weight: 800; letter-spacing: .04em; text-decoration: none; }
+    .wrap { width: min(680px, calc(100% - 32px)); margin: 42px auto 64px; }
+    .card { overflow: hidden; background: #fffdfa; border: 1px solid #dfd0b7; border-radius: 14px; box-shadow: 0 12px 34px rgba(61, 39, 15, .08); }
+    .card-head { padding: 28px 30px 20px; border-bottom: 1px solid #eadfcd; }
+    h1 { margin: 0 0 8px; color: #8f2b1b; font-size: clamp(1.55rem, 4vw, 2rem); line-height: 1.35; }
+    .lead { margin: 0; color: #5f5448; }
+    form { padding: 24px 30px 30px; }
+    label { display: block; margin-top: 18px; color: #3f3429; font-weight: 750; }
+    label:first-child { margin-top: 0; }
+    .required { margin-left: 6px; color: #a21d1d; font-size: .82rem; }
+    input { display: block; width: 100%; margin-top: 7px; padding: 12px 13px; border: 1px solid #cfc0aa; border-radius: 8px; background: #fff; color: #292017; font: inherit; }
+    input:focus { outline: 3px solid rgba(143, 43, 27, .18); border-color: #8f2b1b; }
+    .note { margin: 23px 0 0; padding: 14px 16px; border-left: 4px solid #b58b44; border-radius: 7px; background: #fff5df; color: #5d4420; font-size: .94rem; }
+    button { width: 100%; margin-top: 23px; padding: 14px 18px; border: 0; border-radius: 8px; background: #8f2b1b; color: #fff; font: inherit; font-weight: 800; cursor: pointer; }
+    button:hover { background: #761d10; }
+    button:disabled { cursor: wait; opacity: .7; }
+    .result { margin: 0 30px 26px; padding: 15px 16px; border-radius: 8px; background: #eef7ef; color: #1d5734; }
+    .result.error { background: #fff0ee; color: #8d2518; }
+    .back { display: block; padding: 18px 30px; border-top: 1px solid #eadfcd; color: #8f2b1b; font-weight: 700; text-align: center; text-decoration: none; }
+    .back:hover { text-decoration: underline; }
+    .footer { margin: 22px 0 0; color: #75695b; font-size: .88rem; text-align: center; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner"><a class="brand" href="./">中国料理 福林楼</a></div>
+  </header>
+
+  <main class="wrap">
+    <section class="card" aria-labelledby="page-title">
+      <div class="card-head">
+        <h1 id="page-title">ご予約のキャンセル</h1>
+        <p class="lead">ご予約時に入力されたお名前・メールアドレス・電話番号を入力してください。</p>
+      </div>
+
+      <form id="cancelForm">
+        <label for="name">お名前<span class="required">必須</span>
+          <input id="name" name="name" autocomplete="name" required>
+        </label>
+        <label for="email">メールアドレス<span class="required">必須</span>
+          <input id="email" name="email" type="email" autocomplete="email" required>
+        </label>
+        <label for="phone">電話番号<span class="required">必須</span>
+          <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required>
+        </label>
+        <p class="note">入力内容がご予約情報とすべて一致した場合に、キャンセルを承ります。キャンセル完了後は、お客様と店舗の双方に確認メールをお送りします。</p>
+        <button id="cancelButton" type="submit">予約をキャンセルする</button>
+      </form>
+
+      <div class="result" id="result" hidden aria-live="polite"></div>
+      <a class="back" href="./">予約ページへ戻る</a>
+    </section>
+    <p class="footer">お急ぎの場合はお電話でお願いします　092-481-1369（受付時間 11:30〜14:00、17:30〜22:00）</p>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>
+    const EMAILJS_PUBLIC_KEY = '4-GjeeGbTSMza_1ZT';
+    const EMAILJS_SERVICE_ID = 'service_k70sla9';
+    const EMAILJS_TEMPLATE_ADMIN = 'template_0tuz6oa';
+    const EMAILJS_TEMPLATE_CUSTOMER = 'template_j4q2ujf';
+
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+
+    const form = document.getElementById('cancelForm');
+    const result = document.getElementById('result');
+    const button = document.getElementById('cancelButton');
+
+    function showResult(message, isError) {
+      result.hidden = false;
+      result.textContent = message;
+      result.classList.toggle('error', Boolean(isError));
+    }
+
+    form.addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const tel = document.getElementById('phone').value.trim();
+
+      showResult('ご予約情報を確認しています。しばらくお待ちください。', false);
+      button.disabled = true;
+      button.textContent = 'キャンセル処理中…';
+
+      try {
+        const response = await fetch('/api/cancellations', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ name, email, tel })
+        });
+        const payload = await response.json();
+
+        if (!response.ok) {
+          showResult(payload.error || 'キャンセルを承ることができませんでした。入力内容をご確認ください。', true);
+          return;
+        }
+
+        const params = {
+          name,
+          email,
+          tel,
+          rtype: '予約キャンセル',
+          title: 'ご予約キャンセルを受け付けました',
+          subject: '【福林楼】ご予約キャンセルを受け付けました',
+          public_ref: payload.publicRef,
+          people: '-',
+          date: '-',
+          time: '-',
+          seat: '-',
+          course: '-',
+          drink_plan: '-',
+          reservation_amount: '-',
+          note: '-',
+          action_url: window.location.origin + '/',
+          action_label: '予約ページへ戻る',
+          action_note: 'キャンセルのお手続きは完了しております。ご不明な点がございましたら、店舗までお問い合わせください。',
+          message: 'ご予約のキャンセルを承りました。\n\n【キャンセル内容】\n受付番号：' + payload.publicRef + '\nお名前：' + name + '\n電話番号：' + tel + '\n\nキャンセルのお手続きは完了しております。'
+        };
+
+        const mailResults = await Promise.allSettled([
+          emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ADMIN, params),
+          emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CUSTOMER, params)
+        ]);
+        const mailSent = mailResults.every(function (item) { return item.status === 'fulfilled'; });
+
+        if (mailSent) {
+          showResult('受付番号「' + payload.publicRef + '」のキャンセルを承りました。お客様と店舗へ確認メールをお送りしました。', false);
+        } else {
+          showResult('受付番号「' + payload.publicRef + '」のキャンセルを承りました。確認メールの送信に失敗したため、必要に応じて店舗へお電話ください。', true);
+        }
+        form.reset();
+      } catch (error) {
+        showResult('通信エラーが発生しました。恐れ入りますが、店舗までお電話でご連絡ください。', true);
+      } finally {
+        button.disabled = false;
+        button.textContent = '予約をキャンセルする';
+      }
+    });
+  </script>
+</body>
+</html>

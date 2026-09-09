@@ -1,0 +1,126 @@
+2026-09-09 10:45 変更済み
+
+福林楼　予約・キャンセルメール設定
+
+このファイルの内容を、EmailJSの既存テンプレートへ設定してください。
+新しいテンプレートを作る必要はありません。
+
+────────────────────────
+1. お客様向け：Auto-Reply（template_j4q2ujf）
+────────────────────────
+
+To Email
+{{email}}
+
+From Name（設定できる場合）
+中国料理 福林楼
+
+Subject
+{{subject}}
+
+本文
+下のHTMLを「Edit Content」→「Code Editor」に貼り付けてください。
+
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0;padding:0;background:#f6f0e7;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif;color:#30271f;">
+  <tr>
+    <td align="center" style="padding:32px 16px;">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:640px;background:#fffdfa;border:1px solid #e1d1b9;border-radius:12px;overflow:hidden;">
+        <tr>
+          <td style="padding:24px 30px;background:#8f2b1b;color:#ffffff;">
+            <div style="font-size:13px;letter-spacing:1.8px;opacity:.9;">CHINESE RESTAURANT</div>
+            <div style="margin-top:5px;font-size:24px;font-weight:700;">中国料理 福林楼</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:30px;">
+            <h1 style="margin:0 0 18px;font-size:21px;line-height:1.5;color:#8f2b1b;">{{title}}</h1>
+            <p style="margin:0 0 20px;font-size:15px;line-height:1.9;">{{name}} 様</p>
+            <p style="margin:0;font-size:15px;line-height:1.9;white-space:pre-line;">{{message}}</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 30px 30px;">
+            <div style="padding:16px 18px;background:#fbf3e5;border-left:4px solid #b58b44;color:#60491f;font-size:14px;line-height:1.8;">{{action_note}}</div>
+            <div style="padding-top:24px;text-align:center;">
+              <a href="{{action_url}}" style="display:inline-block;padding:13px 24px;border-radius:6px;background:#8f2b1b;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;">{{action_label}}</a>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:22px 30px;border-top:1px solid #eadfcd;color:#6f6254;font-size:13px;line-height:1.8;">
+            <strong style="color:#3b3026;">中国料理 福林楼</strong><br>
+            お急ぎの場合はお電話でお願いします　092-481-1369<br>
+            受付時間：11:30〜14:00、17:30〜22:00
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+────────────────────────
+2. 店舗向け：Contact Us（template_0tuz6oa）
+────────────────────────
+
+To Email
+店舗で受け取るメールアドレスを入力したままにしてください。
+CCは空欄にしてください。
+
+Reply To
+{{email}}
+
+From Name（設定できる場合）
+福林楼 予約通知
+
+Subject
+{{subject}}
+
+本文
+下のHTMLを「Edit Content」→「Code Editor」に貼り付けてください。
+
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0;padding:0;background:#f6f0e7;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif;color:#30271f;">
+  <tr>
+    <td align="center" style="padding:28px 16px;">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:700px;background:#fffdfa;border:1px solid #e1d1b9;border-radius:12px;overflow:hidden;">
+        <tr>
+          <td style="padding:22px 28px;background:#8f2b1b;color:#ffffff;">
+            <div style="font-size:13px;letter-spacing:1.5px;opacity:.9;">中国料理 福林楼</div>
+            <div style="margin-top:4px;font-size:21px;font-weight:700;">{{title}}</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:28px;">
+            <p style="margin:0 0 20px;font-size:15px;line-height:1.9;white-space:pre-line;">{{message}}</p>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;font-size:14px;">
+              <tr><td style="width:150px;padding:10px 12px;border:1px solid #e8dcc9;background:#faf5ec;font-weight:700;">受付番号</td><td style="padding:10px 12px;border:1px solid #e8dcc9;">{{public_ref}}</td></tr>
+              <tr><td style="padding:10px 12px;border:1px solid #e8dcc9;background:#faf5ec;font-weight:700;">予約の種類</td><td style="padding:10px 12px;border:1px solid #e8dcc9;">{{rtype}}</td></tr>
+              <tr><td style="padding:10px 12px;border:1px solid #e8dcc9;background:#faf5ec;font-weight:700;">お名前</td><td style="padding:10px 12px;border:1px solid #e8dcc9;">{{name}}</td></tr>
+              <tr><td style="padding:10px 12px;border:1px solid #e8dcc9;background:#faf5ec;font-weight:700;">メールアドレス</td><td style="padding:10px 12px;border:1px solid #e8dcc9;">{{email}}</td></tr>
+              <tr><td style="padding:10px 12px;border:1px solid #e8dcc9;background:#faf5ec;font-weight:700;">電話番号</td><td style="padding:10px 12px;border:1px solid #e8dcc9;">{{tel}}</td></tr>
+              <tr><td style="padding:10px 12px;border:1px solid #e8dcc9;background:#faf5ec;font-weight:700;">ご来店日時</td><td style="padding:10px 12px;border:1px solid #e8dcc9;">{{date}}　{{time}}</td></tr>
+              <tr><td style="padding:10px 12px;border:1px solid #e8dcc9;background:#faf5ec;font-weight:700;">人数</td><td style="padding:10px 12px;border:1px solid #e8dcc9;">{{people}}名</td></tr>
+              <tr><td style="padding:10px 12px;border:1px solid #e8dcc9;background:#faf5ec;font-weight:700;">お席の希望</td><td style="padding:10px 12px;border:1px solid #e8dcc9;">{{seat}}</td></tr>
+              <tr><td style="padding:10px 12px;border:1px solid #e8dcc9;background:#faf5ec;font-weight:700;">コース</td><td style="padding:10px 12px;border:1px solid #e8dcc9;">{{course}}</td></tr>
+              <tr><td style="padding:10px 12px;border:1px solid #e8dcc9;background:#faf5ec;font-weight:700;">飲み放題</td><td style="padding:10px 12px;border:1px solid #e8dcc9;">{{drink_plan}}</td></tr>
+              <tr><td style="padding:10px 12px;border:1px solid #e8dcc9;background:#faf5ec;font-weight:700;">予約金額</td><td style="padding:10px 12px;border:1px solid #e8dcc9;">{{reservation_amount}}</td></tr>
+              <tr><td style="padding:10px 12px;border:1px solid #e8dcc9;background:#faf5ec;font-weight:700;">ご要望</td><td style="padding:10px 12px;border:1px solid #e8dcc9;">{{note}}</td></tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:18px 28px;border-top:1px solid #eadfcd;color:#6f6254;font-size:12px;">このメールには、送信元のお客様へ直接返信できます。</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+────────────────────────
+3. 動作確認
+────────────────────────
+
+予約のテストを1件送信し、次を確認してください。
+・お客様のメールに、予約確認メールと「ご予約をキャンセルする」ボタンが届く。
+・店舗のメールに、予約内容が表形式で届く。
+・キャンセルすると、お客様・店舗ともにキャンセル確認メールが届く。
+・キャンセル確認メールのボタンは「予約ページへ戻る」と表示される。
