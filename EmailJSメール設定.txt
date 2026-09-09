@@ -1,0 +1,24 @@
+2026-09-09 10:25 変更済み
+
+EmailJSの既存テンプレート2つを、予約確認とキャンセル確認の両方で使います。
+
+お客様宛テンプレート
+To Email: {{email}}
+Subject: {{subject}}
+本文（Code Editorへ貼り付け）:
+<div style="font-family:Arial,sans-serif;line-height:1.7;color:#2c3e50">
+  <h2>中国料理 福林楼</h2>
+  <p>こんにちは、{{name}} 様</p>
+  <p style="white-space:pre-line">{{message}}</p>
+  <p>お急ぎの場合はお電話でお願いします 092-481-1369（受付時間 11:30〜14:00、17:30〜22:00）</p>
+  <p><a href="{{cancel_url}}">予約をキャンセルする</a></p>
+</div>
+
+店舗宛テンプレート
+Subject: {{subject}}
+本文（Code Editorへ貼り付け）:
+<div style="font-family:Arial,sans-serif;line-height:1.7">
+  <h2>{{title}}</h2>
+  <p style="white-space:pre-line">{{message}}</p>
+  <p>お客様メール：{{email}}<br>電話番号：{{tel}}</p>
+</div>

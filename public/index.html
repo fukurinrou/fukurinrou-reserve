@@ -1,4 +1,4 @@
-<!-- 2026-09-08 23:55 変更済み -->
+<!-- 2026-09-09 10:25 変更済み -->
 <!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ご予約(お席・コース)｜福林楼</title>
 <meta name="description" content="福林楼のご予約ページです。お席のみのご予約から、コース料理のご予約まで承ります。">
@@ -478,7 +478,10 @@ form.addEventListener('submit', function(e){
     drink_plan: reservationAmount ? reservationAmount.drinkLabel : '-',
     reservation_amount: reservationAmount ? formatYen(reservationAmount.total) : '-',
     budget: '',
-    note: document.getElementById('f_note').value
+    note: document.getElementById('f_note').value,
+    cancel_url: window.location.origin + '/cancel.html',
+    subject: '【福林楼】予約希望を受け付けました',
+    message: '予約希望を受け付けました。\n受付内容：' + (rtype === 'course' ? 'コース料理' : 'お席のみ') + '\nご来店日時：' + document.getElementById('f_date').value + ' ' + document.getElementById('f_time').value + '\n人数：' + people + '名\n席の希望：' + (selectedSeat ? selectedSeat.value : '特になし') + '\n予約をキャンセルする場合：' + window.location.origin + '/cancel.html'
   };
 
   submitBtn.disabled = true;
