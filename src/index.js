@@ -1,4 +1,4 @@
-// 2026-09-09 14:30 変更済み
+// 2026-09-10 00:25 変更済み
 const headers = { "content-type": "application/json; charset=utf-8" };
 
 const defaultCourseSettings = {
@@ -75,6 +75,30 @@ async function getCourseSettings(env) {
   }
 }
 
+async function isDateAvailable(env, date) {
+  try {
+    const row = await env.DB.prepare(
+      "SELECT is_open FROM course_reservation_availability WHERE reservation_date=? LIMIT 1",
+    )
+      .bind(date)
+      .first();
+    return !row || Number(row.is_open) !== 0;
+  } catch {
+    return true;
+  }
+}
+
+async function getClosedDates(env) {
+  try {
+    const result = await env.DB.prepare(
+      "SELECT reservation_date FROM course_reservation_availability WHERE is_open=0 ORDER BY reservation_date ASC LIMIT 500",
+    ).all();
+    return (result.results || []).map((row) => row.reservation_date).filter((date) => typeof date === "string");
+  } catch {
+    return [];
+  }
+}
+
 function yen(amount) {
   return `￥${Number(amount).toLocaleString("ja-JP")}`;
 }
@@ -107,6 +131,10 @@ export default {
       return reply({ settings: await getCourseSettings(env) });
     }
 
+    if (request.method === "GET" && url.pathname === "/api/availability") {
+      return reply({ closedDates: await getClosedDates(env) });
+    }
+
     if (request.method === "POST" && url.pathname === "/api/reservations") {
       const payload = await request.json();
       const name = clean(payload.name, 80);
@@ -128,6 +156,10 @@ export default {
         people > 45
       ) {
         return reply({ error: "必須項目を確認してください。" }, 400);
+      }
+
+      if (!(await isDateAvailable(env, date))) {
+        return reply({ error: "選択された日は、現在ご予約を受け付けておりません。別の日をお選びください。" }, 400);
       }
 
       const requestedAt = new Date(`${date}T${time}:00+09:00`);

@@ -1,4 +1,4 @@
-<!-- 2026-09-09 11:20 変更済み -->
+<!-- 2026-09-10 00:25 変更済み -->
 <!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ご予約(お席・コース)｜福林楼</title>
 <meta name="description" content="福林楼のご予約ページです。お席のみのご予約から、コース料理のご予約まで承ります。">
@@ -65,6 +65,8 @@ textarea{resize:vertical;min-height:90px}
 .choice-emphasis select{border:2px solid var(--g);background:#fff;font-weight:700}
 .december-notice{display:none;margin-top:14px;padding:13px 15px;background:#fff0e7;border:1px solid #d88f62;color:#7c2a16;font-size:.85rem}
 .december-notice.show{display:block}.december-notice strong{display:block;margin-bottom:3px}
+.date-availability{display:none;margin:9px 0 0;padding:10px 12px;border-left:4px solid #d88f62;background:#fff0e7;color:#7c2a16;font-size:.82rem;line-height:1.6}
+.date-availability.show{display:block}
 #f_people{-moz-appearance:textfield}#f_people::-webkit-outer-spin-button,#f_people::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .seat-note{margin:0 0 14px;padding:11px 13px;background:#fff0e7;border-left:4px solid #d88f62;font-size:.84rem;color:#7c2a16}
 .seat-none{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:12px 14px;border:2px solid var(--g);background:#fff8eb;border-radius:4px;font-weight:700;color:var(--i);cursor:pointer}.seat-none input{width:auto}
@@ -151,6 +153,7 @@ footer a{color:var(--p)}
           <div>
             <label>ご希望日<span class="req">必須</span></label>
             <input type="date" name="date" id="f_date" required>
+            <p class="date-availability" id="dateAvailability" role="status"></p>
           </div>
           <div>
             <label>ご希望時間<span class="req">必須</span></label>
@@ -281,6 +284,7 @@ const courseTotal = document.getElementById('courseTotal');
 const peopleInput = document.getElementById('f_people');
 const timeSelect = document.getElementById('f_time');
 const dateInput = document.getElementById('f_date');
+const dateAvailability = document.getElementById('dateAvailability');
 const decemberNotice = document.getElementById('decemberNotice');
 const seatGrid = document.getElementById('seatGrid');
 const seatInputs = document.querySelectorAll('input[name="seat"]');
@@ -300,6 +304,7 @@ const defaultCourseSettings = {
 let currentCourseSettings = defaultCourseSettings;
 let courseDetails = {};
 let drinkPlans = {};
+let closedDates = new Set();
 function escapeHtml(value){ return String(value).replace(/[&<>"']/g, function(char){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]); }); }
 function buildCourseDetails(settings){
   return settings.courses.reduce(function(result, course){
@@ -402,6 +407,24 @@ function localDateString(date){
   return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
 }
 dateInput.min = localDateString(new Date());
+function showDateAvailability(message){
+  dateAvailability.textContent = message || '';
+  dateAvailability.classList.toggle('show', Boolean(message));
+}
+function syncDateAvailability(){
+  if(dateInput.value && closedDates.has(dateInput.value)){
+    dateInput.value = '';
+    timeSelect.innerHTML = '<option value="">この日は予約を受け付けておりません</option>';
+    showDateAvailability('選択された日は、現在ご予約を受け付けておりません。別の日をお選びください。');
+    return false;
+  }
+  showDateAvailability('');
+  return true;
+}
+function applyAvailability(dates){
+  closedDates = new Set((Array.isArray(dates) ? dates : []).filter(function(date){ return /^\\d{4}-\\d{2}-\\d{2}$/.test(date); }));
+  if(dateInput.value) syncDateAvailability();
+}
 function addReservationTimes(startHour, startMinute, endHour, endMinute, canAdd){
   for(let minutes = startHour * 60 + startMinute; minutes <= endHour * 60 + endMinute; minutes += 30){
     const hour = String(Math.floor(minutes / 60)).padStart(2, '0');
@@ -465,7 +488,14 @@ typeGroup.addEventListener('change', syncCourseFields);
 courseSelect.addEventListener('change', function(){ syncCourseFields(); syncCourseGuide(); });
 drinkSelect.addEventListener('change', syncReservationAmount);
 peopleInput.addEventListener('input', syncReservationAmount);
-dateInput.addEventListener('change', function(){ syncDecemberNotice(); syncReservationTimes(); });
+dateInput.addEventListener('change', function(){
+  if(!syncDateAvailability()){
+    syncDecemberNotice();
+    return;
+  }
+  syncDecemberNotice();
+  syncReservationTimes();
+});
 function syncSeatCards(){
   document.querySelectorAll('.seat-card').forEach(function(card){
     card.classList.toggle('selected', card.querySelector('input').checked);
@@ -480,6 +510,10 @@ fetch('/api/course-settings')
   .then(function(response){ return response.ok ? response.json() : null; })
   .then(function(payload){ if(payload && payload.settings) applyCourseSettings(payload.settings); })
   .catch(function(){ /* 初回設定前は標準のコース内容で表示します。 */ });
+fetch('/api/availability')
+  .then(function(response){ return response.ok ? response.json() : null; })
+  .then(function(payload){ if(payload) applyAvailability(payload.closedDates); })
+  .catch(function(){ /* 初回設定前は、すべての日付を予約受付中として表示します。 */ });
 
 const form = document.getElementById('reserveForm');
 const submitBtn = document.getElementById('submitBtn');
@@ -501,6 +535,12 @@ form.addEventListener('submit', function(e){
   if(rtype === 'course' && detail && (people < detail.minPeople || people > detail.maxPeople)){
     confirmBox.className = 'confirm show err';
     confirmBox.innerHTML = '<p>' + detail.price.replace(/<[^>]+>/g, '') + ' は <b>' + detail.minPeople + '〜' + detail.maxPeople + '名様</b> で承ります。人数に合うコースをお選びください。</p>';
+    confirmBox.scrollIntoView({behavior:'smooth'});
+    return;
+  }
+  if(closedDates.has(dateInput.value)){
+    confirmBox.className = 'confirm show err';
+    confirmBox.innerHTML = '<p>選択された日は、現在ご予約を受け付けておりません。別の日をお選びください。</p>';
     confirmBox.scrollIntoView({behavior:'smooth'});
     return;
   }
