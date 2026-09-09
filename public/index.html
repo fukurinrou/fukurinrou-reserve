@@ -1,4 +1,4 @@
-<!-- 2026-09-09 10:25 変更済み -->
+<!-- 2026-09-09 11:20 変更済み -->
 <!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ご予約(お席・コース)｜福林楼</title>
 <meta name="description" content="福林楼のご予約ページです。お席のみのご予約から、コース料理のご予約まで承ります。">
@@ -109,7 +109,7 @@ footer a{color:var(--p)}
   <div class="wrap">
     <div class="tag">RESERVATION</div>
     <h1>ご予約</h1>
-    <p>博多駅から徒歩約10分。お席のみのご予約から、コース料理のご予約まで承ります。ご希望の内容をお選びのうえ、フォームよりお申し込みください。</p>
+    <p id="introText">博多駅から徒歩約10分。お席のみのご予約から、コース料理のご予約まで承ります。ご希望の内容をお選びのうえ、フォームよりお申し込みください。</p>
   </div>
 </section>
 
@@ -162,13 +162,13 @@ footer a{color:var(--p)}
         </div>
         <div class="december-notice" id="decemberNotice" role="status">
           <strong>12月にご予約のお客様へ</strong>
-          年末年始はご予約を承れない場合があります。その場合、080-3981-1369からお電話することがありますので、あらかじめご了承ください。
+          <span id="decemberNoticeText">年末年始はご予約を承れない場合があります。その場合、080-3981-1369からお電話することがありますので、あらかじめご了承ください。</span>
         </div>
       </fieldset>
 
       <fieldset id="courseFields">
         <legend>コース内容</legend>
-        <p class="course-note">福林コース・招福コースは<strong>3名様から</strong>、家族コースは<strong>2〜4名様</strong>で承ります。コース料理のご予約は午後の時間帯をお選びください。</p>
+        <p class="course-note" id="courseNote">福林コース・招福コースは<strong>3名様から</strong>、家族コースは<strong>2〜4名様</strong>で承ります。コース料理のご予約は午後の時間帯をお選びください。</p>
         <div class="row single"><div class="choice-emphasis">
             <label>ご希望のコース</label>
             <select name="course" id="f_course">
@@ -284,43 +284,90 @@ const dateInput = document.getElementById('f_date');
 const decemberNotice = document.getElementById('decemberNotice');
 const seatGrid = document.getElementById('seatGrid');
 const seatInputs = document.querySelectorAll('input[name="seat"]');
-const courseDetails = {
-  '福林コース': {
-    price: 'お一人様 3,000円',
-    baseAmount: 3000,
-    priceType: 'perPerson',
-    dishes: ['前菜4種', 'エビチリソース <span class="spicy">🌶️</span>', '我が家の酢豚', '揚げ物2種（鶏唐揚げ・春巻き）', '手作り焼き餃子', 'マーボー豆腐 <span class="spicy">🌶️🌶️🌶️</span>', 'チャーハン', '玉子スープ', '日替わりデザート']
-  },
-  '招福コース': {
-    price: 'お一人様 3,500円',
-    baseAmount: 3500,
-    priceType: 'perPerson',
-    dishes: ['前菜5種', '大きなエビチリソース <span class="spicy">🌶️</span>', '我が家の酢豚', '揚げ物2種（鶏唐揚げ・春巻き）', '手作り焼き餃子', '海鮮三種炒め', 'ピーマンと牛肉の炒め', 'チャーハン', 'フカヒレスープ', '日替わりデザート']
-  },
-  '家族コース': {
-    price: '2〜4名様 合計 5,800円',
-    baseAmount: 5800,
-    priceType: 'fixed',
-    dishes: ['前菜3種', '油淋鶏（揚げ鶏肉のネギ醤油かけ）', 'チャーハン', 'マーボー豆腐 <span class="spicy">🌶️🌶️🌶️</span>', 'エビのチリソース炒め <span class="spicy">🌶️</span>', '焼き餃子', '玉子スープ']
-  }
+const defaultCourseSettings = {
+  introText: '博多駅から徒歩約10分。お席のみのご予約から、コース料理のご予約まで承ります。ご希望の内容をお選びのうえ、フォームよりお申し込みください。',
+  courseNotice: '福林コース・招福コースは3名様から、家族コースは2〜4名様で承ります。コース料理のご予約は午後の時間帯をお選びください。',
+  decemberNotice: '年末年始はご予約を承れない場合があります。その場合、080-3981-1369からお電話することがありますので、あらかじめご了承ください。',
+  regularAlcoholAmount: 2000,
+  familyAlcoholAmount: 2500,
+  softDrinkAmount: 500,
+  courses: [
+    {name:'福林コース',amount:3000,priceType:'perPerson',minPeople:3,maxPeople:45,dishes:['前菜4種','エビチリソース 🌶️','我が家の酢豚','揚げ物2種（鶏唐揚げ・春巻き）','手作り焼き餃子','マーボー豆腐 🌶️🌶️🌶️','チャーハン','玉子スープ','日替わりデザート']},
+    {name:'招福コース',amount:3500,priceType:'perPerson',minPeople:3,maxPeople:45,dishes:['前菜5種','大きなエビチリソース 🌶️','我が家の酢豚','揚げ物2種（鶏唐揚げ・春巻き）','手作り焼き餃子','海鮮三種炒め','ピーマンと牛肉の炒め','チャーハン','フカヒレスープ','日替わりデザート']},
+    {name:'家族コース',amount:5800,priceType:'fixed',minPeople:2,maxPeople:4,dishes:['前菜3種','油淋鶏（揚げ鶏肉のネギ醤油かけ）','チャーハン','マーボー豆腐 🌶️🌶️🌶️','エビのチリソース炒め 🌶️','焼き餃子','玉子スープ']}
+  ]
 };
-const drinkPlans = {
-  none: { label: '希望しない', perPerson: 0 },
-  alcohol: { label: '2時間飲み放題（90分オーダーストップ）', perPerson: 2000 },
-  softdrink: { label: 'ソフトドリンク飲み放題', perPerson: 500 }
-};
+let currentCourseSettings = defaultCourseSettings;
+let courseDetails = {};
+let drinkPlans = {};
+function escapeHtml(value){ return String(value).replace(/[&<>"']/g, function(char){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]); }); }
+function buildCourseDetails(settings){
+  return settings.courses.reduce(function(result, course){
+    if(!course || !course.name) return result;
+    const price = course.priceType === 'fixed'
+      ? (course.minPeople + '〜' + course.maxPeople + '名様 合計 ' + formatYen(Number(course.amount) || 0))
+      : ('お一人様 ' + formatYen(Number(course.amount) || 0));
+    result[course.name] = {
+      price: price,
+      baseAmount: Number(course.amount) || 0,
+      priceType: course.priceType === 'fixed' ? 'fixed' : 'perPerson',
+      minPeople: Math.max(1, Number(course.minPeople) || 1),
+      maxPeople: Math.min(45, Math.max(1, Number(course.maxPeople) || 45)),
+      dishes: (Array.isArray(course.dishes) ? course.dishes : []).map(function(dish){ return escapeHtml(dish).replace(/🌶️/g, '<span class="spicy">🌶️</span>'); })
+    };
+    return result;
+  }, {});
+}
+function buildDrinkPlans(settings){
+  return {
+    none: { label: '希望しない', perPerson: 0 },
+    alcohol: { label: '2時間飲み放題（90分オーダーストップ）', perPerson: Number(settings.regularAlcoholAmount) || 0 },
+    softdrink: { label: 'ソフトドリンク飲み放題', perPerson: Number(settings.softDrinkAmount) || 0 }
+  };
+}
+function rebuildCourseOptions(){
+  const selected = courseSelect.value;
+  courseSelect.innerHTML = '';
+  Object.keys(courseDetails).forEach(function(name){
+    const detail = courseDetails[name];
+    const option = document.createElement('option');
+    option.value = name;
+    option.textContent = name + '（' + detail.price + '）';
+    courseSelect.appendChild(option);
+  });
+  const consultation = document.createElement('option');
+  consultation.value = 'まだ決めていない・相談したい';
+  consultation.textContent = 'まだ決めていない・相談したい';
+  courseSelect.appendChild(consultation);
+  if(courseDetails[selected] || selected === consultation.value) courseSelect.value = selected;
+}
+function applyCourseSettings(settings){
+  if(!settings || !Array.isArray(settings.courses) || !settings.courses.length) return;
+  currentCourseSettings = settings;
+  courseDetails = buildCourseDetails(settings);
+  drinkPlans = buildDrinkPlans(settings);
+  document.getElementById('introText').textContent = settings.introText || defaultCourseSettings.introText;
+  document.getElementById('courseNote').textContent = settings.courseNotice || defaultCourseSettings.courseNotice;
+  document.getElementById('decemberNoticeText').textContent = settings.decemberNotice || defaultCourseSettings.decemberNotice;
+  rebuildCourseOptions();
+  syncCourseFields();
+  syncCourseGuide();
+}
+courseDetails = buildCourseDetails(defaultCourseSettings);
+drinkPlans = buildDrinkPlans(defaultCourseSettings);
 function formatYen(amount){ return '￥' + amount.toLocaleString('ja-JP'); }
-function isFamilyCourse(){ return courseSelect.value === '家族コース'; }
+function isFamilyCourse(){ const detail = courseDetails[courseSelect.value]; return Boolean(detail && detail.priceType === 'fixed'); }
 function getDrinkPlan(){
-  const plan = drinkPlans[drinkSelect.value];
+  const plan = drinkPlans[drinkSelect.value] || drinkPlans.none;
   return drinkSelect.value === 'alcohol' && isFamilyCourse()
-    ? { label: plan.label, perPerson: 2500 }
+    ? { label: plan.label, perPerson: Number(currentCourseSettings.familyAlcoholAmount) || 0 }
     : plan;
 }
 function syncDrinkOptions(){
   document.querySelector('#f_drink option[value="alcohol"]').textContent = isFamilyCourse()
-    ? '2時間飲み放題（お一人様＋2,500円／90分オーダーストップ）'
-    : '2時間飲み放題（お一人様＋2,000円／90分オーダーストップ）';
+    ? '2時間飲み放題（お一人様＋' + formatYen(Number(currentCourseSettings.familyAlcoholAmount) || 0) + '／90分オーダーストップ）'
+    : '2時間飲み放題（お一人様＋' + formatYen(Number(currentCourseSettings.regularAlcoholAmount) || 0) + '／90分オーダーストップ）';
+  document.querySelector('#f_drink option[value="softdrink"]').textContent = 'ソフトドリンク飲み放題（お一人様＋' + formatYen(Number(currentCourseSettings.softDrinkAmount) || 0) + '）';
 }
 function syncDecemberNotice(){
   const month = dateInput.value ? Number(dateInput.value.split('-')[1]) : 0;
@@ -399,11 +446,16 @@ function syncCourseFields(){
   const val = document.querySelector('input[name="rtype"]:checked').value;
   courseFields.classList.toggle('show', val === 'course');
   if(val === 'course'){
-    const minimum = isFamilyCourse() ? 2 : 3;
+    const detail = courseDetails[courseSelect.value];
+    const minimum = detail ? detail.minPeople : 1;
+    const maximum = detail ? detail.maxPeople : 45;
     peopleInput.min = minimum;
+    peopleInput.max = maximum;
     if(Number(peopleInput.value) < minimum) peopleInput.value = minimum;
+    if(Number(peopleInput.value) > maximum) peopleInput.value = maximum;
   }else{
     peopleInput.min = 1;
+    peopleInput.max = 45;
   }
   syncDrinkOptions();
   syncReservationAmount();
@@ -424,6 +476,10 @@ syncCourseFields();
 syncCourseGuide();
 syncDecemberNotice();
 syncSeatCards();
+fetch('/api/course-settings')
+  .then(function(response){ return response.ok ? response.json() : null; })
+  .then(function(payload){ if(payload && payload.settings) applyCourseSettings(payload.settings); })
+  .catch(function(){ /* 初回設定前は標準のコース内容で表示します。 */ });
 
 const form = document.getElementById('reserveForm');
 const submitBtn = document.getElementById('submitBtn');
@@ -442,15 +498,9 @@ form.addEventListener('submit', function(e){
     confirmBox.scrollIntoView({behavior:'smooth'});
     return;
   }
-  if(rtype === 'course' && !isFamilyCourse() && people < 3){
+  if(rtype === 'course' && detail && (people < detail.minPeople || people > detail.maxPeople)){
     confirmBox.className = 'confirm show err';
-    confirmBox.innerHTML = '<p>コース料理は <b>3名様から</b> 承ります。</p>';
-    confirmBox.scrollIntoView({behavior:'smooth'});
-    return;
-  }
-  if(rtype === 'course' && isFamilyCourse() && (people < 2 || people > 4)){
-    confirmBox.className = 'confirm show err';
-    confirmBox.innerHTML = '<p>家族コースは <b>2〜4名様</b> 用です。人数に合うコースをお選びください。</p>';
+    confirmBox.innerHTML = '<p>' + detail.price.replace(/<[^>]+>/g, '') + ' は <b>' + detail.minPeople + '〜' + detail.maxPeople + '名様</b> で承ります。人数に合うコースをお選びください。</p>';
     confirmBox.scrollIntoView({behavior:'smooth'});
     return;
   }
@@ -476,6 +526,7 @@ form.addEventListener('submit', function(e){
     course_price: reservationAmount ? reservationAmount.summary : '-',
     course_dishes: rtype === 'course' && detail ? detail.dishes.map(function(d){ return d.replace(/<[^>]+>/g, ''); }).join(' / ') : '-',
     drink_plan: reservationAmount ? reservationAmount.drinkLabel : '-',
+    drink_id: rtype === 'course' ? drinkSelect.value : 'none',
     reservation_amount: reservationAmount ? formatYen(reservationAmount.total) : '-',
     budget: '',
     note: document.getElementById('f_note').value,
