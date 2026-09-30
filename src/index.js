@@ -1,4 +1,4 @@
-// 2026-09-10 00:25 変更済み
+// 2026-09-30 13:55 変更済み
 const headers = { "content-type": "application/json; charset=utf-8" };
 
 const defaultCourseSettings = {
@@ -123,6 +123,65 @@ function calculatePrice(settings, course, people, drinkId) {
   };
 }
 
+const SYNC_TABLE_SQL = `CREATE TABLE IF NOT EXISTS calendar_sync_events (
+  reservation_type TEXT NOT NULL,
+  reservation_id INTEGER NOT NULL,
+  public_ref TEXT NOT NULL,
+  calendar_event_id TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (reservation_type, reservation_id)
+)`;
+
+async function ensureCalendarSyncTable(env) {
+  await env.DB.prepare(SYNC_TABLE_SQL).run();
+}
+
+async function calendarRequest(env, action, payload) {
+  const url = String(env.GMAIL_APPS_SCRIPT_URL || "");
+  const secret = String(env.GMAIL_APPS_SCRIPT_SECRET || "");
+  const calendarId = String(env.GOOGLE_CALENDAR_ID || "hakata.fulinlou@gmail.com");
+  if (!url || !secret) return null;
+
+  const response = await fetch(url, {
+    method: "POST",
+    redirect: "follow",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ secret, action, calendarId, ...payload }),
+  });
+  const text = await response.text();
+  let result = {};
+  try { result = text ? JSON.parse(text) : {}; } catch { throw new Error("Googleカレンダー連携先から正しい応答がありませんでした。"); }
+  if (!response.ok || !result.ok) throw new Error(result.error || "Googleカレンダーの更新に失敗しました。");
+  return result;
+}
+
+async function createCalendarEvent(env, reservation) {
+  const result = await calendarRequest(env, "calendar.create", reservation);
+  if (!result || !result.eventId) return false;
+  await ensureCalendarSyncTable(env);
+  await env.DB.prepare(
+    `INSERT INTO calendar_sync_events (reservation_type,reservation_id,public_ref,calendar_event_id)
+     VALUES (?,?,?,?)
+     ON CONFLICT(reservation_type,reservation_id)
+     DO UPDATE SET public_ref=excluded.public_ref,calendar_event_id=excluded.calendar_event_id`,
+  ).bind("course", reservation.reservationId, reservation.publicRef, result.eventId).run();
+  return true;
+}
+
+async function deleteCalendarEvent(env, reservationId) {
+  await ensureCalendarSyncTable(env);
+  const row = await env.DB.prepare(
+    "SELECT calendar_event_id FROM calendar_sync_events WHERE reservation_type='course' AND reservation_id=? LIMIT 1",
+  ).bind(reservationId).first();
+  if (!row || !row.calendar_event_id) return false;
+  const result = await calendarRequest(env, "calendar.delete", { eventId: row.calendar_event_id });
+  if (!result) throw new Error("Googleカレンダー連携の設定が不足しています。");
+  await env.DB.prepare(
+    "DELETE FROM calendar_sync_events WHERE reservation_type='course' AND reservation_id=?",
+  ).bind(reservationId).run();
+  return true;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -178,7 +237,7 @@ export default {
 
       const price = selectedCourse ? calculatePrice(settings, selectedCourse, people, drinkId) : null;
       const publicRef = reference();
-      await env.DB.prepare(
+      const created = await env.DB.prepare(
         "INSERT INTO course_reservations (public_ref,reservation_type,customer_name,customer_email,customer_phone,people,reservation_date,reservation_time,seat_preference,course_name,drink_plan,per_person_amount,total_amount,course_dishes,notes,status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, 'new')",
       )
         .bind(
@@ -200,6 +259,38 @@ export default {
         )
         .run();
 
+      const reservationId = Number(created.meta && created.meta.last_row_id);
+      if (Number.isInteger(reservationId) && reservationId > 0) {
+        try {
+          const start = new Date(`${date}T${time}:00+09:00`);
+          const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+          const kind = reservationType === "コース料理" ? "コース予約" : "席予約";
+          await createCalendarEvent(env, {
+            reservationId,
+            publicRef,
+            title: `【${kind}】${name}様・${people}名`,
+            start: start.toISOString(),
+            end: end.toISOString(),
+            description: [
+              `受付番号：${publicRef}`,
+              `お名前：${name}`,
+              `電話番号：${tel}`,
+              `メール：${email}`,
+              `ご予約：${date} ${time}`,
+              `人数：${people}名`,
+              `種別：${reservationType}`,
+              courseName ? `コース：${courseName}` : "",
+              price ? `金額：${yen(price.total)}` : "",
+              clean(payload.seat, 100) ? `お席の希望：${clean(payload.seat, 100)}` : "",
+              clean(payload.note, 1000) ? `ご要望：${clean(payload.note, 1000)}` : "",
+            ].filter(Boolean).join("\n"),
+          });
+        } catch (error) {
+          // 一時的な連携エラーで予約自体は失敗させません。
+          console.error("Google Calendar course sync failed", error);
+        }
+      }
+
       return reply({ ok: true, publicRef }, 201);
     }
 
@@ -216,6 +307,13 @@ export default {
         .bind(name, email, tel)
         .first();
       if (!row) return reply({ error: "一致する予約が見つかりませんでした。" }, 404);
+
+      try {
+        await deleteCalendarEvent(env, row.id);
+      } catch (error) {
+        console.error("Google Calendar course delete failed", error);
+        return reply({ error: "カレンダーの予定を削除できませんでした。しばらくしてからもう一度お試しください。" }, 503);
+      }
 
       await env.DB.prepare("UPDATE course_reservations SET status='cancelled', cancelled_at=CURRENT_TIMESTAMP WHERE id=?")
         .bind(row.id)
