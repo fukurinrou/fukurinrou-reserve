@@ -1,4 +1,6 @@
-// 2026-09-30 13:55 変更済み
+// 2026-10-23 23:15 変更済み
+import { syncCourseToCalendar } from "./calendar.js";
+
 const headers = { "content-type": "application/json; charset=utf-8" };
 
 const defaultCourseSettings = {
@@ -39,6 +41,12 @@ function validTime(value) {
   return ["13:00", "13:30", "14:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00"].includes(value);
 }
 
+function validDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(value + "T00:00:00Z");
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0,10) === value;
+}
+
 function normalizeSettings(value) {
   const source = value && typeof value === "object" ? value : {};
   const rawCourses = Array.isArray(source.courses) ? source.courses : [];
@@ -75,28 +83,20 @@ async function getCourseSettings(env) {
   }
 }
 
-async function isDateAvailable(env, date) {
-  try {
-    const row = await env.DB.prepare(
-      "SELECT is_open FROM course_reservation_availability WHERE reservation_date=? LIMIT 1",
-    )
-      .bind(date)
-      .first();
-    return !row || Number(row.is_open) !== 0;
-  } catch {
-    return true;
-  }
+async function availabilityColumn(env) {
+  await env.DB.prepare("CREATE TABLE IF NOT EXISTS course_reservation_availability (date TEXT PRIMARY KEY,is_open INTEGER NOT NULL DEFAULT 1,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)").run();
+  const columns = await env.DB.prepare("PRAGMA table_info(course_reservation_availability)").all();
+  return columns.results.some(row => row.name === "date") ? "date" : "reservation_date";
 }
-
+async function isDateAvailable(env,date) {
+  const column=await availabilityColumn(env);
+  const row=await env.DB.prepare(`SELECT is_open FROM course_reservation_availability WHERE ${column}=? LIMIT 1`).bind(date).first();
+  return !row || Number(row.is_open)!==0;
+}
 async function getClosedDates(env) {
-  try {
-    const result = await env.DB.prepare(
-      "SELECT reservation_date FROM course_reservation_availability WHERE is_open=0 ORDER BY reservation_date ASC LIMIT 500",
-    ).all();
-    return (result.results || []).map((row) => row.reservation_date).filter((date) => typeof date === "string");
-  } catch {
-    return [];
-  }
+  const column=await availabilityColumn(env);
+  const result=await env.DB.prepare(`SELECT ${column} AS date FROM course_reservation_availability WHERE is_open=0 ORDER BY ${column} ASC LIMIT 500`).all();
+  return result.results.map(row=>row.date).filter(date=>typeof date==="string");
 }
 
 function yen(amount) {
@@ -121,65 +121,6 @@ function calculatePrice(settings, course, people, drinkId) {
     perPerson: Math.round(total / people),
     drinkLabel,
   };
-}
-
-const SYNC_TABLE_SQL = `CREATE TABLE IF NOT EXISTS calendar_sync_events (
-  reservation_type TEXT NOT NULL,
-  reservation_id INTEGER NOT NULL,
-  public_ref TEXT NOT NULL,
-  calendar_event_id TEXT NOT NULL,
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (reservation_type, reservation_id)
-)`;
-
-async function ensureCalendarSyncTable(env) {
-  await env.DB.prepare(SYNC_TABLE_SQL).run();
-}
-
-async function calendarRequest(env, action, payload) {
-  const url = String(env.GMAIL_APPS_SCRIPT_URL || "");
-  const secret = String(env.GMAIL_APPS_SCRIPT_SECRET || "");
-  const calendarId = String(env.GOOGLE_CALENDAR_ID || "hakata.fulinlou@gmail.com");
-  if (!url || !secret) return null;
-
-  const response = await fetch(url, {
-    method: "POST",
-    redirect: "follow",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ secret, action, calendarId, ...payload }),
-  });
-  const text = await response.text();
-  let result = {};
-  try { result = text ? JSON.parse(text) : {}; } catch { throw new Error("Googleカレンダー連携先から正しい応答がありませんでした。"); }
-  if (!response.ok || !result.ok) throw new Error(result.error || "Googleカレンダーの更新に失敗しました。");
-  return result;
-}
-
-async function createCalendarEvent(env, reservation) {
-  const result = await calendarRequest(env, "calendar.create", reservation);
-  if (!result || !result.eventId) return false;
-  await ensureCalendarSyncTable(env);
-  await env.DB.prepare(
-    `INSERT INTO calendar_sync_events (reservation_type,reservation_id,public_ref,calendar_event_id)
-     VALUES (?,?,?,?)
-     ON CONFLICT(reservation_type,reservation_id)
-     DO UPDATE SET public_ref=excluded.public_ref,calendar_event_id=excluded.calendar_event_id`,
-  ).bind("course", reservation.reservationId, reservation.publicRef, result.eventId).run();
-  return true;
-}
-
-async function deleteCalendarEvent(env, reservationId) {
-  await ensureCalendarSyncTable(env);
-  const row = await env.DB.prepare(
-    "SELECT calendar_event_id FROM calendar_sync_events WHERE reservation_type='course' AND reservation_id=? LIMIT 1",
-  ).bind(reservationId).first();
-  if (!row || !row.calendar_event_id) return false;
-  const result = await calendarRequest(env, "calendar.delete", { eventId: row.calendar_event_id });
-  if (!result) throw new Error("Googleカレンダー連携の設定が不足しています。");
-  await env.DB.prepare(
-    "DELETE FROM calendar_sync_events WHERE reservation_type='course' AND reservation_id=?",
-  ).bind(reservationId).run();
-  return true;
 }
 
 export default {
@@ -208,8 +149,9 @@ export default {
         !name ||
         !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
         !tel ||
-        !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+        !validDate(date) ||
         !validTime(time) ||
+        !["お席のみ","コース料理"].includes(reservationType) ||
         !Number.isInteger(people) ||
         people < 1 ||
         people > 45
@@ -260,38 +202,9 @@ export default {
         .run();
 
       const reservationId = Number(created.meta && created.meta.last_row_id);
-      if (Number.isInteger(reservationId) && reservationId > 0) {
-        try {
-          const start = new Date(`${date}T${time}:00+09:00`);
-          const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
-          const kind = reservationType === "コース料理" ? "コース予約" : "席予約";
-          await createCalendarEvent(env, {
-            reservationId,
-            publicRef,
-            title: `【${kind}】${name}様・${people}名`,
-            start: start.toISOString(),
-            end: end.toISOString(),
-            description: [
-              `受付番号：${publicRef}`,
-              `お名前：${name}`,
-              `電話番号：${tel}`,
-              `メール：${email}`,
-              `ご予約：${date} ${time}`,
-              `人数：${people}名`,
-              `種別：${reservationType}`,
-              courseName ? `コース：${courseName}` : "",
-              price ? `金額：${yen(price.total)}` : "",
-              clean(payload.seat, 100) ? `お席の希望：${clean(payload.seat, 100)}` : "",
-              clean(payload.note, 1000) ? `ご要望：${clean(payload.note, 1000)}` : "",
-            ].filter(Boolean).join("\n"),
-          });
-        } catch (error) {
-          // 一時的な連携エラーで予約自体は失敗させません。
-          console.error("Google Calendar course sync failed", error);
-        }
-      }
-
-      return reply({ ok: true, publicRef }, 201);
+      const row = await env.DB.prepare("SELECT * FROM course_reservations WHERE id=?").bind(reservationId).first();
+      const calendar = row ? await syncCourseToCalendar(env,row) : {state:"error"};
+      return reply({ ok:true,publicRef,calendarSynced:calendar.state==="synced" },201);
     }
 
     if (request.method === "POST" && url.pathname === "/api/cancellations") {
@@ -302,25 +215,20 @@ export default {
       if (!name || !email || !tel) return reply({ error: "お名前・メールアドレス・電話番号を入力してください。" }, 400);
 
       const row = await env.DB.prepare(
-        "SELECT id, public_ref FROM course_reservations WHERE customer_name=? AND customer_email=? AND customer_phone=? AND status!='cancelled' AND trashed_at IS NULL ORDER BY reservation_date DESC, id DESC LIMIT 1",
+        "SELECT * FROM course_reservations WHERE customer_name=? AND customer_email=? AND customer_phone=? AND status!='cancelled' AND trashed_at IS NULL ORDER BY reservation_date DESC, id DESC LIMIT 1",
       )
         .bind(name, email, tel)
         .first();
       if (!row) return reply({ error: "一致する予約が見つかりませんでした。" }, 404);
 
-      try {
-        await deleteCalendarEvent(env, row.id);
-      } catch (error) {
-        console.error("Google Calendar course delete failed", error);
-        return reply({ error: "カレンダーの予定を削除できませんでした。しばらくしてからもう一度お試しください。" }, 503);
-      }
-
       await env.DB.prepare("UPDATE course_reservations SET status='cancelled', cancelled_at=CURRENT_TIMESTAMP WHERE id=?")
         .bind(row.id)
         .run();
-      return reply({ ok: true, publicRef: row.public_ref });
+      const calendar = await syncCourseToCalendar(env,{...row,status:"cancelled"});
+      return reply({ ok:true,publicRef:row.public_ref,calendarSynced:calendar.state==="cancelled" });
     }
 
     return env.ASSETS.fetch(request);
   },
 };
+
