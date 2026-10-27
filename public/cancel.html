@@ -32,6 +32,16 @@
     .back { display: block; padding: 18px 30px; border-top: 1px solid #eadfcd; color: #8f2b1b; font-weight: 700; text-align: center; text-decoration: none; }
     .back:hover { text-decoration: underline; }
     .footer { margin: 22px 0 0; color: #75695b; font-size: .88rem; text-align: center; }
+    @media (prefers-reduced-motion: no-preference) {
+      .header-inner, .card-head, #cancelForm, .back, .footer { animation: cancel-rise .75s both; }
+      .card-head { animation-delay: .1s; }
+      #cancelForm { animation-delay: .22s; }
+      .back, .footer { animation-delay: .3s; }
+      .result:not([hidden]) { animation: cancel-rise .35s both; }
+      button { transition: background .25s, transform .25s; }
+      button:hover:not(:disabled) { transform: translateY(-2px); }
+      @keyframes cancel-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+    }
   </style>
 </head>
 <body>
