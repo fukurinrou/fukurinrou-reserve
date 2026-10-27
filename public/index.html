@@ -95,6 +95,17 @@ button.submit:disabled{opacity:.6;cursor:default}
 footer{background:var(--i);color:var(--p);padding:30px 0;margin-top:40px;font-size:.8rem}
 footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
 footer a{color:var(--p)}
+@media(prefers-reduced-motion:no-preference){
+  .intro .tag,.intro h1,.intro p,.formbox,.tel-cta{animation:reserve-rise .75s both}
+  .intro .tag{animation-delay:.06s}
+  .intro h1{animation-delay:.16s}
+  .intro p{animation-delay:.26s}
+  .formbox{animation-delay:.32s}
+  .tel-cta{animation-delay:.38s}
+  @keyframes reserve-rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+  button.submit,.toplink,.tel-cta .callbtn{transition:background .25s,transform .25s}
+  button.submit:hover,.toplink:hover,.tel-cta .callbtn:hover{transform:translateY(-2px)}
+}
 </style></head>
 <body>
 
