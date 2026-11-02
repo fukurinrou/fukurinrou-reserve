@@ -7,15 +7,15 @@ const defaultCourseSettings = {
   introText:
     "博多駅から徒歩約10分。お席のみのご予約から、コース料理のご予約まで承ります。ご希望の内容をお選びのうえ、フォームよりお申し込みください。",
   courseNotice:
-    "福林コース・招福コースは3名様から、家族コースは2〜4名様で承ります。コース料理のご予約は午後の時間帯をお選びください。",
+    "福林コース・招福コースは2名様から、家族コースは2〜4名様で承ります。コース料理のご予約は午後の時間帯をお選びください。",
   decemberNotice:
     "年末年始はご予約を承れない場合があります。その場合、080-3981-1369からお電話することがありますので、あらかじめご了承ください。",
   regularAlcoholAmount: 2000,
   familyAlcoholAmount: 2500,
   softDrinkAmount: 500,
   courses: [
-    { name: "福林コース", amount: 3000, priceType: "perPerson", minPeople: 3, maxPeople: 45, dishes: ["前菜4種", "エビチリソース 🌶️", "我が家の酢豚", "揚げ物2種（鶏唐揚げ・春巻き）", "手作り焼き餃子", "マーボー豆腐 🌶️🌶️🌶️", "チャーハン", "玉子スープ", "日替わりデザート"] },
-    { name: "招福コース", amount: 3500, priceType: "perPerson", minPeople: 3, maxPeople: 45, dishes: ["前菜5種", "大きなエビチリソース 🌶️", "我が家の酢豚", "揚げ物2種（鶏唐揚げ・春巻き）", "手作り焼き餃子", "海鮮三種炒め", "ピーマンと牛肉の炒め", "チャーハン", "フカヒレスープ", "日替わりデザート"] },
+    { name: "福林コース", amount: 3000, priceType: "perPerson", minPeople: 2, maxPeople: 45, dishes: ["前菜4種", "エビチリソース 🌶️", "我が家の酢豚", "揚げ物2種（鶏唐揚げ・春巻き）", "手作り焼き餃子", "マーボー豆腐 🌶️🌶️🌶️", "チャーハン", "玉子スープ", "日替わりデザート"] },
+    { name: "招福コース", amount: 3500, priceType: "perPerson", minPeople: 2, maxPeople: 45, dishes: ["前菜5種", "大きなエビチリソース 🌶️", "我が家の酢豚", "揚げ物2種（鶏唐揚げ・春巻き）", "手作り焼き餃子", "海鮮三種炒め", "ピーマンと牛肉の炒め", "チャーハン", "フカヒレスープ", "日替わりデザート"] },
     { name: "家族コース", amount: 5800, priceType: "fixed", minPeople: 2, maxPeople: 4, dishes: ["前菜3種", "油淋鶏（揚げ鶏肉のネギ醤油かけ）", "チャーハン", "マーボー豆腐 🌶️🌶️🌶️", "エビのチリソース炒め 🌶️", "焼き餃子", "玉子スープ"] },
   ],
 };
@@ -136,7 +136,9 @@ export default {
     }
 
     if (request.method === "POST" && url.pathname === "/api/reservations") {
-      const payload = await request.json();
+      let payload;
+      try { payload = await request.json(); } catch { return reply({ error: "入力内容を確認してください。" }, 400); }
+      if (!payload || typeof payload !== "object" || Array.isArray(payload)) return reply({ error: "入力内容を確認してください。" }, 400);
       const name = clean(payload.name, 80);
       const email = clean(payload.email, 180).toLowerCase();
       const tel = clean(payload.tel, 30);
@@ -163,6 +165,10 @@ export default {
         return reply({ error: "選択された日は、現在ご予約を受け付けておりません。別の日をお選びください。" }, 400);
       }
 
+      const day = new Date(`${date}T00:00:00Z`).getUTCDay();
+      if ((day === 0 || reservationType === "コース料理") && time < "17:30") {
+        return reply({ error: "日曜・コース料理のご予約は、夜の営業時間をお選びください。" }, 400);
+      }
       const requestedAt = new Date(`${date}T${time}:00+09:00`);
       if (requestedAt.getTime() < Date.now() + 60 * 60 * 1000) {
         return reply({ error: "当日のご予約は、希望時刻の1時間前までです。" }, 400);
@@ -177,6 +183,9 @@ export default {
         return reply({ error: `${selectedCourse.name}は${selectedCourse.minPeople}〜${selectedCourse.maxPeople}名様でお選びください。` }, 400);
       }
 
+      if (reservationType === "コース料理" && !selectedCourse && courseName !== "まだ決めていない・相談したい") {
+        return reply({ error: "コースを選び直してください。" }, 400);
+      }
       const price = selectedCourse ? calculatePrice(settings, selectedCourse, people, drinkId) : null;
       const publicRef = reference();
       const created = await env.DB.prepare(
@@ -208,17 +217,21 @@ export default {
     }
 
     if (request.method === "POST" && url.pathname === "/api/cancellations") {
-      const payload = await request.json();
+      let payload;
+      try { payload = await request.json(); } catch { return reply({ error: "入力内容を確認してください。" }, 400); }
+      if (!payload || typeof payload !== "object" || Array.isArray(payload)) return reply({ error: "入力内容を確認してください。" }, 400);
       const name = clean(payload.name, 80);
       const email = clean(payload.email, 180).toLowerCase();
       const tel = clean(payload.tel, 30);
       if (!name || !email || !tel) return reply({ error: "お名前・メールアドレス・電話番号を入力してください。" }, 400);
 
-      const row = await env.DB.prepare(
-        "SELECT * FROM course_reservations WHERE customer_name=? AND customer_email=? AND customer_phone=? AND status!='cancelled' AND trashed_at IS NULL ORDER BY reservation_date DESC, id DESC LIMIT 1",
-      )
-        .bind(name, email, tel)
-        .first();
+      const publicRef = clean(payload.publicRef, 40).toUpperCase();
+      const refFilter = publicRef ? " AND public_ref=?" : "";
+      const matches = await env.DB.prepare(
+        "SELECT * FROM course_reservations WHERE customer_name=? AND customer_email=? AND customer_phone=? AND status NOT IN ('cancelled','complete') AND trashed_at IS NULL" + refFilter + " ORDER BY reservation_date DESC, id DESC LIMIT 2",
+      ).bind(name, email, tel, ...(publicRef ? [publicRef] : [])).all();
+      if (matches.results.length > 1) return reply({ error: "複数の予約があります。キャンセルする予約の受付番号を入力してください。" }, 409);
+      const row = matches.results[0];
       if (!row) return reply({ error: "一致する予約が見つかりませんでした。" }, 404);
 
       await env.DB.prepare("UPDATE course_reservations SET status='cancelled', cancelled_at=CURRENT_TIMESTAMP WHERE id=?")

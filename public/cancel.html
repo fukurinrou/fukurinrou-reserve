@@ -57,6 +57,9 @@
       </div>
 
       <form id="cancelForm">
+        <label for="publicRef">受付番号（複数のご予約がある場合は必須）
+          <input id="publicRef" name="publicRef" maxlength="40" placeholder="例：C-1234ABCD" autocomplete="off">
+        </label>
         <label for="name">お名前<span class="required">必須</span>
           <input id="name" name="name" autocomplete="name" required>
         </label>
@@ -83,7 +86,13 @@
     const EMAILJS_TEMPLATE_ADMIN = 'template_0tuz6oa';
     const EMAILJS_TEMPLATE_CUSTOMER = 'template_j4q2ujf';
 
-    emailjs.init(EMAILJS_PUBLIC_KEY);
+    if (window.emailjs) window.emailjs.init(EMAILJS_PUBLIC_KEY);
+function sendMail(template, params) {
+  return Promise.resolve().then(function(){
+    if (!window.emailjs) throw new Error('確認メールを送信できませんでした。');
+    return window.emailjs.send(EMAILJS_SERVICE_ID, template, params);
+  });
+}
 
     const form = document.getElementById('cancelForm');
     const result = document.getElementById('result');
@@ -110,7 +119,7 @@
         const response = await fetch('/api/cancellations', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ name, email, tel })
+          body: JSON.stringify({ name, email, tel, publicRef: document.getElementById('publicRef').value.trim() })
         });
         const payload = await response.json();
 
@@ -142,8 +151,8 @@
         };
 
         const mailResults = await Promise.allSettled([
-          emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ADMIN, params),
-          emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CUSTOMER, params)
+          sendMail(EMAILJS_TEMPLATE_ADMIN, params),
+          sendMail(EMAILJS_TEMPLATE_CUSTOMER, params)
         ]);
         const mailSent = mailResults.every(function (item) { return item.status === 'fulfilled'; });
 

@@ -142,32 +142,32 @@ footer a{color:var(--p)}
         <legend>ご来店情報</legend>
         <div class="row">
           <div>
-            <label>お名前<span class="req">必須</span></label>
-            <input type="text" name="name" id="f_name" required>
+            <label for="f_name">お名前<span class="req">必須</span></label>
+            <input type="text" name="name" id="f_name" maxlength="80" autocomplete="name" required>
           </div>
           <div>
-            <label>お電話番号<span class="req">必須</span></label>
-            <input type="tel" name="tel" id="f_tel" required>
+            <label for="f_tel">お電話番号<span class="req">必須</span></label>
+            <input type="tel" name="tel" id="f_tel" maxlength="30" autocomplete="tel" required>
           </div>
         </div>
         <div class="row">
           <div>
-            <label>メールアドレス<span class="req">必須</span></label>
-            <input type="email" name="email" id="f_email" required placeholder="確認メールをお送りします">
+            <label for="f_email">メールアドレス<span class="req">必須</span></label>
+            <input type="email" name="email" id="f_email" maxlength="180" autocomplete="email" required placeholder="確認メールをお送りします">
           </div>
           <div>
-            <label>人数<span class="req">必須</span></label>
+            <label for="f_people">人数<span class="req">必須</span></label>
             <input type="number" name="people" id="f_people" min="1" max="45" value="2" inputmode="numeric" required>
           </div>
         </div>
         <div class="row">
           <div>
-            <label>ご希望日<span class="req">必須</span></label>
+            <label for="f_date">ご希望日<span class="req">必須</span></label>
             <input type="date" name="date" id="f_date" required>
             <p class="date-availability" id="dateAvailability" role="status"></p>
           </div>
           <div>
-            <label>ご希望時間<span class="req">必須</span></label>
+            <label for="f_time">ご希望時間<span class="req">必須</span></label>
             <select name="time" id="f_time" required>
               <option value="">選択してください</option>
             </select>
@@ -182,9 +182,9 @@ footer a{color:var(--p)}
 
       <fieldset id="courseFields">
         <legend>コース内容</legend>
-        <p class="course-note" id="courseNote">福林コース・招福コースは<strong>3名様から</strong>、家族コースは<strong>2〜4名様</strong>で承ります。コース料理のご予約は午後の時間帯をお選びください。</p>
+        <p class="course-note" id="courseNote">福林コース・招福コースは<strong>2名様から</strong>、家族コースは<strong>2〜4名様</strong>で承ります。コース料理のご予約は午後の時間帯をお選びください。</p>
         <div class="row single"><div class="choice-emphasis">
-            <label>ご希望のコース</label>
+            <label for="f_course">ご希望のコース</label>
             <select name="course" id="f_course">
               <option value="福林コース">福林コース（お一人様 3,000円）</option>
               <option value="招福コース">招福コース（お一人様 3,500円）</option>
@@ -194,7 +194,7 @@ footer a{color:var(--p)}
             <div class="course-guide" id="courseGuide" aria-live="polite"></div>
         </div></div>
         <div class="row single"><div class="choice-emphasis">
-            <label>飲み放題</label>
+            <label for="f_drink">飲み放題</label>
             <select name="drink" id="f_drink">
               <option value="none">希望しない（＋0円）</option>
               <option value="alcohol">2時間飲み放題（お一人様＋2,000円／90分オーダーストップ）</option>
@@ -239,7 +239,7 @@ footer a{color:var(--p)}
         <legend>ご要望</legend>
         <div class="row single">
           <div>
-            <label>アレルギー・苦手な食材、その他ご要望</label>
+            <label for="f_note">アレルギー・苦手な食材、その他ご要望</label>
             <textarea name="note" id="f_note" placeholder="例:海老アレルギーがあります／誕生日のお祝いで伺います　など"></textarea>
           </div>
         </div>
@@ -284,7 +284,13 @@ const EMAILJS_SERVICE_ID   = "service_k70sla9";
 const EMAILJS_TEMPLATE_ADMIN    = "template_0tuz6oa";
 const EMAILJS_TEMPLATE_CUSTOMER = "template_j4q2ujf";
 
-emailjs.init(EMAILJS_PUBLIC_KEY);
+if (window.emailjs) window.emailjs.init(EMAILJS_PUBLIC_KEY);
+function sendMail(template, params) {
+  return Promise.resolve().then(function(){
+    if (!window.emailjs) throw new Error('確認メールを送信できませんでした。');
+    return window.emailjs.send(EMAILJS_SERVICE_ID, template, params);
+  });
+}
 
 const typeGroup = document.getElementById('typeGroup');
 const courseFields = document.getElementById('courseFields');
@@ -301,14 +307,14 @@ const seatGrid = document.getElementById('seatGrid');
 const seatInputs = document.querySelectorAll('input[name="seat"]');
 const defaultCourseSettings = {
   introText: '博多駅から徒歩約10分。お席のみのご予約から、コース料理のご予約まで承ります。ご希望の内容をお選びのうえ、フォームよりお申し込みください。',
-  courseNotice: '福林コース・招福コースは3名様から、家族コースは2〜4名様で承ります。コース料理のご予約は午後の時間帯をお選びください。',
+  courseNotice: '福林コース・招福コースは2名様から、家族コースは2〜4名様で承ります。コース料理のご予約は午後の時間帯をお選びください。',
   decemberNotice: '年末年始はご予約を承れない場合があります。その場合、080-3981-1369からお電話することがありますので、あらかじめご了承ください。',
   regularAlcoholAmount: 2000,
   familyAlcoholAmount: 2500,
   softDrinkAmount: 500,
   courses: [
-    {name:'福林コース',amount:3000,priceType:'perPerson',minPeople:3,maxPeople:45,dishes:['前菜4種','エビチリソース 🌶️','我が家の酢豚','揚げ物2種（鶏唐揚げ・春巻き）','手作り焼き餃子','マーボー豆腐 🌶️🌶️🌶️','チャーハン','玉子スープ','日替わりデザート']},
-    {name:'招福コース',amount:3500,priceType:'perPerson',minPeople:3,maxPeople:45,dishes:['前菜5種','大きなエビチリソース 🌶️','我が家の酢豚','揚げ物2種（鶏唐揚げ・春巻き）','手作り焼き餃子','海鮮三種炒め','ピーマンと牛肉の炒め','チャーハン','フカヒレスープ','日替わりデザート']},
+    {name:'福林コース',amount:3000,priceType:'perPerson',minPeople:2,maxPeople:45,dishes:['前菜4種','エビチリソース 🌶️','我が家の酢豚','揚げ物2種（鶏唐揚げ・春巻き）','手作り焼き餃子','マーボー豆腐 🌶️🌶️🌶️','チャーハン','玉子スープ','日替わりデザート']},
+    {name:'招福コース',amount:3500,priceType:'perPerson',minPeople:2,maxPeople:45,dishes:['前菜5種','大きなエビチリソース 🌶️','我が家の酢豚','揚げ物2種（鶏唐揚げ・春巻き）','手作り焼き餃子','海鮮三種炒め','ピーマンと牛肉の炒め','チャーハン','フカヒレスープ','日替わりデザート']},
     {name:'家族コース',amount:5800,priceType:'fixed',minPeople:2,maxPeople:4,dishes:['前菜3種','油淋鶏（揚げ鶏肉のネギ醤油かけ）','チャーハン','マーボー豆腐 🌶️🌶️🌶️','エビのチリソース炒め 🌶️','焼き餃子','玉子スープ']}
   ]
 };
@@ -415,7 +421,7 @@ function syncReservationAmount(){
     '合計：' + formatYen(amount.total);
 }
 function localDateString(date){
-  return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+  return new Intl.DateTimeFormat('sv-SE', {timeZone:'Asia/Tokyo', year:'numeric', month:'2-digit', day:'2-digit'}).format(date);
 }
 dateInput.min = localDateString(new Date());
 function showDateAvailability(message){
@@ -433,7 +439,7 @@ function syncDateAvailability(){
   return true;
 }
 function applyAvailability(dates){
-  closedDates = new Set((Array.isArray(dates) ? dates : []).filter(function(date){ return /^\\d{4}-\\d{2}-\\d{2}$/.test(date); }));
+  closedDates = new Set((Array.isArray(dates) ? dates : []).filter(function(date){ return /^\d{4}-\d{2}-\d{2}$/.test(date); }));
   if(dateInput.value) syncDateAvailability();
 }
 function addReservationTimes(startHour, startMinute, endHour, endMinute, canAdd){
@@ -450,12 +456,14 @@ function syncReservationTimes(){
   const now = new Date();
   const earliest = new Date(now.getTime() + 60 * 60 * 1000);
   const isToday = dateInput.value === localDateString(now);
-  addReservationTimes(13, 0, 14, 0, function(value){
-    const requestedAt = dateInput.value ? new Date(dateInput.value + 'T' + value + ':00') : null;
+  const sunday = dateInput.value && new Date(dateInput.value + 'T00:00:00Z').getUTCDay() === 0;
+  const courseBooking = document.querySelector('input[name="rtype"]:checked').value === 'course';
+  if (!sunday && !courseBooking) addReservationTimes(13, 0, 14, 0, function(value){
+    const requestedAt = dateInput.value ? new Date(dateInput.value + 'T' + value + ':00+09:00') : null;
     return !isToday || !requestedAt || requestedAt >= earliest;
   });
   addReservationTimes(17, 30, 22, 0, function(value){
-    const requestedAt = dateInput.value ? new Date(dateInput.value + 'T' + value + ':00') : null;
+    const requestedAt = dateInput.value ? new Date(dateInput.value + 'T' + value + ':00+09:00') : null;
     return !isToday || !requestedAt || requestedAt >= earliest;
   });
   if(timeSelect.options.length === 1 && isToday){
@@ -528,6 +536,7 @@ fetch('/api/availability')
 
 const form = document.getElementById('reserveForm');
 const submitBtn = document.getElementById('submitBtn');
+function escapeHtml(value){ return String(value).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 const confirmBox = document.getElementById('confirmBox');
 
 form.addEventListener('submit', function(e){
@@ -555,7 +564,7 @@ form.addEventListener('submit', function(e){
     confirmBox.scrollIntoView({behavior:'smooth'});
     return;
   }
-  const requestedAt = new Date(dateInput.value + 'T' + timeSelect.value + ':00');
+  const requestedAt = new Date(dateInput.value + 'T' + timeSelect.value + ':00+09:00');
   if(dateInput.value === localDateString(new Date()) && requestedAt < new Date(Date.now() + 60 * 60 * 1000)){
     confirmBox.className = 'confirm show err';
     confirmBox.innerHTML = '<p>当日のご予約は、希望時刻の <b>1時間前まで</b> にお願いいたします。</p>';
@@ -603,8 +612,8 @@ form.addEventListener('submit', function(e){
     });
   }).then(function(payload){
     return Promise.allSettled([
-      emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ADMIN, params),
-      emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CUSTOMER, params)
+      sendMail(EMAILJS_TEMPLATE_ADMIN, params),
+      sendMail(EMAILJS_TEMPLATE_CUSTOMER, params)
     ]).then(function(results){
       return {payload: payload, mailSent: results.every(function(result){ return result.status === 'fulfilled'; })};
     });
@@ -625,7 +634,7 @@ form.addEventListener('submit', function(e){
   }).catch(function(err){
     confirmBox.className = 'confirm show err';
     confirmBox.innerHTML =
-      '<p>申し訳ございません。' + (err && err.message ? err.message : '送信に失敗しました。') + ' お急ぎの場合はお電話でお願いします <b>092-481-1369</b>（受付時間 11:30〜14:00、17:30〜22:00）</p>';
+      '<p>申し訳ございません。' + escapeHtml(err && err.message ? err.message : '送信に失敗しました。') + ' お急ぎの場合はお電話でお願いします <b>092-481-1369</b>（受付時間 11:30〜14:00、17:30〜22:00）</p>';
     confirmBox.scrollIntoView({behavior:'smooth'});
     console.error(err);
   }).finally(function(){
