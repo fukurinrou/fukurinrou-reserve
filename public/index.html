@@ -11,7 +11,7 @@ body{margin:0;background:var(--p);color:var(--i);font-family:"Noto Sans JP",sans
 .bar{background:var(--r);color:#fff}
 .bar .wrap{min-height:62px;display:flex;justify-content:space-between;align-items:center;gap:12px}
 .brand{font:700 1.25rem "Noto Serif JP";text-decoration:none;color:#fff}
-.navlinks{display:flex;gap:8px}
+.navlinks{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .toplink{color:#fff;text-decoration:none;border:1px solid #ffffff99;border-radius:3px;padding:6px 10px;font-size:.8rem}
 .toplink:hover{background:#ffffff22}
 .intro{padding:32px 0 20px;background:linear-gradient(90deg,#292017e8,#29201794),url("images/storefront.jpg") center/cover;color:#fff}
@@ -39,7 +39,7 @@ fieldset legend{
 }
 .row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
 .row.single{grid-template-columns:1fr}
-@media(max-width:600px){.row{grid-template-columns:1fr}}
+@media(max-width:600px){.row{grid-template-columns:1fr}.bar .wrap{padding:9px 0}.toplink{font-size:.72rem;padding:6px 8px}}
 label{display:block;font-size:.82rem;color:#6b5c4d;margin-bottom:6px}
 label .req{color:var(--r);margin-left:3px}
 input,select,textarea{
@@ -111,9 +111,10 @@ footer a{color:var(--p)}
 
 <header class="bar">
   <div class="wrap">
-    <a class="brand" href="./">福林楼</a>
+    <a class="brand" href="https://fukurinrou.jp/">福林楼</a>
     <div class="navlinks">
       <a class="toplink" href="./cancel.html">予約をキャンセル</a>
+      <a class="toplink" href="https://osechi.fukurinrou.jp/">お弁当・おせち</a>
     </div>
   </div>
 </header>
@@ -171,7 +172,7 @@ footer a{color:var(--p)}
             <select name="time" id="f_time" required>
               <option value="">選択してください</option>
             </select>
-            <p class="formnote">ご予約は午後の時間帯のみ承ります。当日のご予約は、希望時刻の1時間前までです。</p>
+            <p class="formnote">ネット予約は月〜土のお席のみ13:00・13:30、夜17:30〜21:30です。コース料理は20:00まで。その他の時間はお電話でご相談ください。当日は希望時刻の1時間前までです。</p>
           </div>
         </div>
         <div class="december-notice" id="decemberNotice" role="status">
@@ -247,7 +248,7 @@ footer a{color:var(--p)}
 
       <div class="submitrow">
         <button class="submit" type="submit" id="submitBtn">この内容で予約を送る</button>
-        <span class="formnote">送信後、自動で確認メールが届きます。内容確認のうえ店舗より折り返しご連絡する場合があります。</span>
+        <span class="formnote">送信結果と受付番号を画面に表示します。確認メールが届かない場合は、受付番号を控えて店舗へご連絡ください。</span>
       </div>
     </form>
 
@@ -458,11 +459,11 @@ function syncReservationTimes(){
   const isToday = dateInput.value === localDateString(now);
   const sunday = dateInput.value && new Date(dateInput.value + 'T00:00:00Z').getUTCDay() === 0;
   const courseBooking = document.querySelector('input[name="rtype"]:checked').value === 'course';
-  if (!sunday && !courseBooking) addReservationTimes(13, 0, 14, 0, function(value){
+  if (!sunday && !courseBooking) addReservationTimes(13, 0, 13, 30, function(value){
     const requestedAt = dateInput.value ? new Date(dateInput.value + 'T' + value + ':00+09:00') : null;
     return !isToday || !requestedAt || requestedAt >= earliest;
   });
-  addReservationTimes(17, 30, 22, 0, function(value){
+  addReservationTimes(17, 30, courseBooking ? 20 : 21, courseBooking ? 0 : 30, function(value){
     const requestedAt = dateInput.value ? new Date(dateInput.value + 'T' + value + ':00+09:00') : null;
     return !isToday || !requestedAt || requestedAt >= earliest;
   });

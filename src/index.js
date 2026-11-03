@@ -38,7 +38,7 @@ function reference() {
 }
 
 function validTime(value) {
-  return ["13:00", "13:30", "14:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00"].includes(value);
+  return ["13:00", "13:30", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"].includes(value);
 }
 
 function validDate(value) {
@@ -168,6 +168,9 @@ export default {
       const day = new Date(`${date}T00:00:00Z`).getUTCDay();
       if ((day === 0 || reservationType === "コース料理") && time < "17:30") {
         return reply({ error: "日曜・コース料理のご予約は、夜の営業時間をお選びください。" }, 400);
+      }
+      if (reservationType === "コース料理" && time > "20:00") {
+        return reply({ error: "コース料理は閉店までのご利用時間を確保するため、20:00までをお選びください。" }, 400);
       }
       const requestedAt = new Date(`${date}T${time}:00+09:00`);
       if (requestedAt.getTime() < Date.now() + 60 * 60 * 1000) {
