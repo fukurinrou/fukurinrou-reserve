@@ -76,6 +76,12 @@ textarea{resize:vertical;min-height:90px}
 .seat-card{position:relative;display:block;margin:0;border:2px solid var(--l);background:#fff;cursor:pointer;overflow:hidden;border-radius:4px}
 .seat-card input{position:absolute;opacity:0}.seat-card img{display:block;width:100%;height:170px;object-fit:cover}.seat-card span{display:block;padding:8px 10px;font-size:.87rem;font-weight:700}
 .seat-card.selected{border-color:var(--r);box-shadow:0 0 0 3px #8f2b1b22}.seat-card.selected span{background:#fff0e7;color:var(--r)}
+.seat-card:focus-within,.seat-none:focus-within{outline:3px solid var(--g);outline-offset:3px}
+.seat-card:has(input:disabled),.seat-none:has(input:disabled){opacity:.52;cursor:not-allowed}
+.seat-card small{display:block;font:500 .78rem "Noto Sans JP",sans-serif;color:#6b5c4d}
+.seat-availability{margin:0 0 12px;padding:10px 13px;background:#f7f0e3;border:1px solid var(--l);font-size:.85rem}
+.seat-group{display:none}.seat-group.show{display:flex}
+.seat-none{margin-top:12px}
 @media(max-width:600px){.seat-grid{grid-template-columns:1fr}.seat-card img{height:190px}}
 
 .submitrow{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:6px}
@@ -206,34 +212,28 @@ footer a{color:var(--p)}
       </fieldset>
 
       <fieldset>
-        <legend>席のご希望</legend>
-        <label class="seat-none"><input type="radio" name="seat" value="特になし" checked> 特になし（おまかせ）</label>
-        <details class="seat-details">
-          <summary>席を選択する（タップして開く）</summary>
-          <p class="seat-note">混雑状況などにより、ご希望の席へご案内できない場合があります。あらかじめご了承ください。</p>
-          <div class="seat-details-inner"><div class="seat-grid" id="seatGrid">
-            <label class="seat-card">
-              <input type="radio" name="seat" value="円卓席">
-              <img src="images/round-table.jpg" alt="円卓席">
-              <span>円卓席</span>
-            </label>
-            <label class="seat-card">
-              <input type="radio" name="seat" value="お座敷席">
-              <img src="images/zashiki.jpg" alt="お座敷席">
-              <span>お座敷席</span>
-            </label>
-            <label class="seat-card">
-              <input type="radio" name="seat" value="小上がり座敷席">
-              <img src="images/small-zashiki.jpg" alt="小上がり座敷席">
-              <span>小上がり座敷席</span>
-            </label>
-            <label class="seat-card">
-              <input type="radio" name="seat" value="入口側テーブル席">
-              <img src="images/entrance-table.jpg" alt="入口側テーブル席">
-              <span>入口側テーブル席</span>
-            </label>
-          </div></div>
-        </details>
+        <legend>お席を選ぶ</legend>
+        <p class="seat-note">円卓２卓・畳席４卓は１組につき１枠、長い卓は合計12名までです。同じ時間帯の予約を差し引いた残数を表示します。席の配置は店舗で最終確認します。</p>
+        <p class="seat-availability" id="seatAvailability" role="status" aria-live="polite">日時と人数を選ぶと残席を表示します。</p>
+        <div class="seat-grid" id="seatGrid">
+          <label class="seat-card">
+            <input type="radio" name="seat" value="円卓席">
+            <img src="images/round-table.jpg" alt="円卓席">
+            <span>円卓席 <small data-remaining="round">日時を選択</small></span>
+          </label>
+          <label class="seat-card">
+            <input type="radio" name="seat" value="畳席">
+            <img src="images/zashiki.jpg" alt="畳席">
+            <span>畳席 <small data-remaining="tatami">日時を選択</small></span>
+          </label>
+          <label class="seat-card">
+            <input type="radio" name="seat" value="長い卓">
+            <img src="images/entrance-table.jpg" alt="長い卓">
+            <span>長い卓（最大12名） <small data-remaining="long">日時を選択</small></span>
+          </label>
+        </div>
+        <label class="seat-none" id="seatAuto"><input type="radio" name="seat" value="特になし" checked> おまかせ（空いている席へご案内）</label>
+        <label class="seat-none seat-group" id="seatGroup"><input type="radio" name="seat" value="団体相談" disabled> 13〜45名様の団体相談（席の配置は店舗からご案内）</label>
       </fieldset>
 
       <fieldset>
@@ -306,6 +306,11 @@ const dateAvailability = document.getElementById('dateAvailability');
 const decemberNotice = document.getElementById('decemberNotice');
 const seatGrid = document.getElementById('seatGrid');
 const seatInputs = document.querySelectorAll('input[name="seat"]');
+const seatAvailability = document.getElementById('seatAvailability');
+const seatGroup = document.getElementById('seatGroup');
+const seatAuto = document.getElementById('seatAuto');
+let seatRequestId = 0;
+let seatStockReady = false;
 const defaultCourseSettings = {
   introText: '博多駅から徒歩約10分。お席のみのご予約から、コース料理のご予約まで承ります。ご希望の内容をお選びのうえ、フォームよりお申し込みください。',
   courseNotice: '福林コース・招福コースは2名様から、家族コースは2〜4名様で承ります。コース料理のご予約は午後の時間帯をお選びください。',
@@ -471,6 +476,7 @@ function syncReservationTimes(){
     timeSelect.options[0].textContent = '本日は予約可能な時間がありません';
   }
   if(Array.from(timeSelect.options).some(function(option){ return option.value === selectedTime; })) timeSelect.value = selectedTime;
+  refreshSeatAvailability();
 }
 function syncCourseGuide(){
   const detail = courseDetails[courseSelect.value];
@@ -507,10 +513,12 @@ function syncCourseFields(){
 typeGroup.addEventListener('change', syncCourseFields);
 courseSelect.addEventListener('change', function(){ syncCourseFields(); syncCourseGuide(); });
 drinkSelect.addEventListener('change', syncReservationAmount);
-peopleInput.addEventListener('input', syncReservationAmount);
+peopleInput.addEventListener('input', function(){ syncReservationAmount(); refreshSeatAvailability(); });
+timeSelect.addEventListener('change', refreshSeatAvailability);
 dateInput.addEventListener('change', function(){
   if(!syncDateAvailability()){
     syncDecemberNotice();
+    refreshSeatAvailability();
     return;
   }
   syncDecemberNotice();
@@ -521,11 +529,63 @@ function syncSeatCards(){
     card.classList.toggle('selected', card.querySelector('input').checked);
   });
 }
+function updateSeatMode(){
+  const group = Number(peopleInput.value) > 12;
+  const groupInput = seatGroup.querySelector('input');
+  seatGroup.classList.toggle('show', group);
+  seatAuto.style.display = group ? 'none' : 'flex';
+  seatGrid.style.display = group ? 'none' : 'grid';
+  groupInput.disabled = !group;
+  if(group) groupInput.checked = true;
+  else if(groupInput.checked) seatAuto.querySelector('input').checked = true;
+  syncSeatCards();
+}
+function setRemaining(remaining){
+  const people = Number(peopleInput.value) || 0;
+  const options = {
+    '円卓席': { key:'round', available:remaining.round > 0, label:'残り' + remaining.round + '卓' },
+    '畳席': { key:'tatami', available:remaining.tatami > 0, label:'残り' + remaining.tatami + '卓' },
+    '長い卓': { key:'long', available:remaining.long >= people, label:'残り' + remaining.long + '名分' }
+  };
+  Object.keys(options).forEach(function(seat){
+    const option = options[seat];
+    const input = Array.from(seatInputs).find(function(item){ return item.value === seat; });
+    input.disabled = !option.available || people > 12;
+    document.querySelector('[data-remaining="' + option.key + '"]').textContent =
+      option.available ? option.label : option.label + '（選択できません）';
+    if(input.disabled && input.checked) seatAuto.querySelector('input').checked = true;
+  });
+  const any = Object.values(options).some(function(option){ return option.available; });
+  seatAuto.querySelector('input').disabled = !any || people > 12;
+  seatGroup.querySelector('input').disabled = people <= 12 || !remaining.group;
+  seatStockReady = people > 12 ? remaining.group : any;
+  seatAvailability.textContent = people > 12
+    ? (remaining.group ? '団体相談を受け付けています。席の配置は店舗からご案内します。' : 'この時間帯は団体相談の空きがありません。別の日時をお選びください。')
+    : (any ? '円卓 残り' + remaining.round + '卓／畳席 残り' + remaining.tatami + '卓／長い卓 残り' + remaining.long + '名分'
+           : 'この時間帯は満席です。別の日時をお選びください。');
+  syncSeatCards();
+}
+function refreshSeatAvailability(){
+  const token = ++seatRequestId;
+  seatStockReady = false;
+  updateSeatMode();
+  if(!dateInput.value || !timeSelect.value || !Number(peopleInput.value)){
+    seatAvailability.textContent = '日時と人数を選ぶと残席を表示します。';
+    seatInputs.forEach(function(input){ input.disabled = true; });
+    return;
+  }
+  seatAvailability.textContent = '残席を確認しています…';
+  fetch('/api/seat-availability?date=' + encodeURIComponent(dateInput.value) + '&time=' + encodeURIComponent(timeSelect.value), {cache:'no-store'})
+    .then(function(response){ if(!response.ok) throw new Error('残席を確認できませんでした。'); return response.json(); })
+    .then(function(payload){ if(token === seatRequestId) setRemaining(payload.remaining); })
+    .catch(function(){ if(token === seatRequestId){ seatAvailability.textContent = '残席を確認できませんでした。再読み込みしてお試しください。'; seatInputs.forEach(function(input){ input.disabled = true; }); } });
+}
 seatInputs.forEach(function(input){ input.addEventListener('change', syncSeatCards); });
 syncCourseFields();
 syncCourseGuide();
 syncDecemberNotice();
 syncSeatCards();
+window.addEventListener('focus', function(){ if(dateInput.value && timeSelect.value) refreshSeatAvailability(); });
 fetch('/api/course-settings')
   .then(function(response){ return response.ok ? response.json() : null; })
   .then(function(payload){ if(payload && payload.settings) applyCourseSettings(payload.settings); })
@@ -547,6 +607,12 @@ form.addEventListener('submit', function(e){
   const people = Number(peopleInput.value);
   const detail = courseDetails[courseSelect.value];
   const selectedSeat = document.querySelector('input[name="seat"]:checked');
+  if(!seatStockReady || !selectedSeat || selectedSeat.disabled){
+    confirmBox.className = 'confirm show err';
+    confirmBox.textContent = 'この日時のお席を選択できません。残席を確認して、別のお席または日時をお選びください。';
+    confirmBox.scrollIntoView({behavior:'smooth'});
+    return;
+  }
   if(people < 1 || people > 45){
     confirmBox.className = 'confirm show err';
     confirmBox.innerHTML = '<p>人数は <b>1〜45名</b> の範囲で入力してください。</p>';
@@ -633,6 +699,7 @@ form.addEventListener('submit', function(e){
     syncSeatCards();
     confirmBox.scrollIntoView({behavior:'smooth'});
   }).catch(function(err){
+    refreshSeatAvailability();
     confirmBox.className = 'confirm show err';
     confirmBox.innerHTML =
       '<p>申し訳ございません。' + escapeHtml(err && err.message ? err.message : '送信に失敗しました。') + ' お急ぎの場合はお電話でお願いします <b>092-481-1369</b>（受付時間 11:30〜14:00、17:30〜22:00）</p>';
