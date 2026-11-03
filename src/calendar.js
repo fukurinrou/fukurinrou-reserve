@@ -15,15 +15,16 @@ export function courseEvent(item) {
   const start = new Date(`${item.reservation_date}T${item.reservation_time}:00+09:00`);
   if (Number.isNaN(start.getTime())) throw new Error("予約日時を確認してください。");
   const course = item.reservation_type === "コース料理";
+  const closing = new Date(`${item.reservation_date}T${item.reservation_time < "17:30" ? "14:00" : "22:00"}:00+09:00`);
   return {
     eventKey: `course:${item.id}:${item.public_ref}`,publicRef:item.public_ref,
     title:`【${course ? "コース予約" : "席予約"}】${item.customer_name}様・${item.people}名${course && item.course_name ? "｜"+item.course_name : ""}`,
-    start:start.toISOString(),end:new Date(start.getTime()+2*3600000).toISOString(),colorId:course?"3":"9",
+    start:start.toISOString(),end:new Date(Math.max(start.getTime()+30*60000,Math.min(start.getTime()+2*3600000,closing.getTime()))).toISOString(),colorId:course?"3":"9",
     description:[`受付番号：${item.public_ref}`,`お名前：${item.customer_name}`,`電話：${item.customer_phone}`,`メール：${item.customer_email}`,
       `来店予定：${item.reservation_date} ${item.reservation_time}`,`人数：${item.people}名`,`お席の希望：${item.seat_preference || "特になし"}`,
       item.course_name?`コース：${item.course_name}`:"",item.drink_plan?`飲み物：${item.drink_plan}`:"",item.total_amount?`合計：${item.total_amount}`:"",item.course_dishes?`料理：${item.course_dishes}`:"",
       `受付状態：${({new:"仮受付",handled:"対応済み",paid:"会計済み",complete:"完了"})[item.status]||item.status}`,
-      "カレンダー上は2時間の予定枠です。実際のご利用時間は店舗でご案内します。",item.notes?`ご要望：${item.notes}`:""].filter(Boolean).join("\n"),
+      "予定枠は閉店時刻までです。実際のご利用時間は店舗でご案内します。",item.notes?`ご要望：${item.notes}`:""].filter(Boolean).join("\n"),
   };
 }
 async function requestCalendar(env,action,payload) {
