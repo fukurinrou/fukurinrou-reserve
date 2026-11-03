@@ -41,6 +41,54 @@ function validTime(value) {
   return ["13:00", "13:30", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"].includes(value);
 }
 
+const SEAT_CAPACITY = { round: 2, tatami: 4, long: 12 };
+const OCCUPANCY = `WITH occupied AS (
+  SELECT
+    COALESCE(SUM(CASE WHEN seat_preference='円卓席' THEN 1
+      WHEN seat_preference IN ('畳席','お座敷席','小上がり座敷席','長い卓','入口側テーブル席') THEN 0 ELSE 2 END),0) AS round_used,
+    COALESCE(SUM(CASE WHEN seat_preference IN ('畳席','お座敷席','小上がり座敷席') THEN 1
+      WHEN seat_preference IN ('円卓席','長い卓','入口側テーブル席') THEN 0 ELSE 4 END),0) AS tatami_used,
+    COALESCE(SUM(CASE WHEN seat_preference IN ('長い卓','入口側テーブル席') THEN people
+      WHEN seat_preference IN ('円卓席','畳席','お座敷席','小上がり座敷席') THEN 0 ELSE 12 END),0) AS long_used,
+    COUNT(*) AS active_count
+  FROM course_reservations
+  WHERE reservation_date=? AND status IN ('new','handled','paid') AND trashed_at IS NULL
+    AND time(reservation_time) < time(?, '+2 hours')
+    AND time(reservation_time, '+2 hours') > time(?)
+)`;
+function seatRemaining(occupied) {
+  return {
+    round: Math.max(0, SEAT_CAPACITY.round - Number(occupied.round_used || 0)),
+    tatami: Math.max(0, SEAT_CAPACITY.tatami - Number(occupied.tatami_used || 0)),
+    long: Math.max(0, SEAT_CAPACITY.long - Number(occupied.long_used || 0)),
+    group: Number(occupied.active_count || 0) === 0,
+  };
+}
+async function getSeatRemaining(env, date, time) {
+  const row = await env.DB.prepare(OCCUPANCY + " SELECT * FROM occupied").bind(date, time, time).first();
+  return seatRemaining(row || {});
+}
+const INSERT_WITH_SEAT = OCCUPANCY + `,
+chosen AS (
+ SELECT CASE
+   WHEN ?='特になし' THEN CASE
+     WHEN ?>12 THEN '団体相談'
+     WHEN long_used+?<=12 THEN '長い卓'
+     WHEN tatami_used<4 THEN '畳席'
+     WHEN round_used<2 THEN '円卓席'
+     ELSE '' END
+   ELSE ? END AS seat
+ FROM occupied
+)
+INSERT INTO course_reservations
+(public_ref,reservation_type,customer_name,customer_email,customer_phone,people,reservation_date,reservation_time,seat_preference,course_name,drink_plan,per_person_amount,total_amount,course_dishes,notes,status)
+SELECT ?,?,?,?,?,?,?,?,chosen.seat,?,?,?,?,?,?,'new'
+FROM occupied CROSS JOIN chosen
+WHERE (chosen.seat='円卓席' AND round_used<2)
+   OR (chosen.seat='畳席' AND tatami_used<4)
+   OR (chosen.seat='長い卓' AND long_used+?<=12)
+   OR (chosen.seat='団体相談' AND active_count=0)`;
+
 function validDate(value) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const date = new Date(value + "T00:00:00Z");
@@ -135,6 +183,16 @@ export default {
       return reply({ closedDates: await getClosedDates(env) });
     }
 
+    if (request.method === "GET" && url.pathname === "/api/seat-availability") {
+      const date = url.searchParams.get("date") || "";
+      const time = url.searchParams.get("time") || "";
+      if (!validDate(date) || !validTime(time)) return reply({ error: "日時を選択してください。" }, 400);
+      const remaining = await getSeatRemaining(env, date, time);
+      return new Response(JSON.stringify({ remaining }), {
+        headers: { ...headers, "Cache-Control": "no-store, max-age=0" },
+      });
+    }
+
     if (request.method === "POST" && url.pathname === "/api/reservations") {
       let payload;
       try { payload = await request.json(); } catch { return reply({ error: "入力内容を確認してください。" }, 400); }
@@ -189,31 +247,33 @@ export default {
       if (reservationType === "コース料理" && !selectedCourse && courseName !== "まだ決めていない・相談したい") {
         return reply({ error: "コースを選び直してください。" }, 400);
       }
+      const requestedSeat = clean(payload.seat, 100);
+      if (!["円卓席", "畳席", "長い卓", "団体相談", "特になし"].includes(requestedSeat) ||
+          (people > 12 && !["団体相談", "特になし"].includes(requestedSeat)) ||
+          (people <= 12 && requestedSeat === "団体相談")) {
+        return reply({ error: "人数に合う席を選び直してください。13名様以上は団体相談をお選びください。" }, 400);
+      }
       const price = selectedCourse ? calculatePrice(settings, selectedCourse, people, drinkId) : null;
       const publicRef = reference();
-      const created = await env.DB.prepare(
-        "INSERT INTO course_reservations (public_ref,reservation_type,customer_name,customer_email,customer_phone,people,reservation_date,reservation_time,seat_preference,course_name,drink_plan,per_person_amount,total_amount,course_dishes,notes,status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, 'new')",
-      )
+      // 判定と保存を1つのSQL文にし、同時申込みでも最後の枠を重複販売しない。
+      const created = await env.DB.prepare(INSERT_WITH_SEAT)
         .bind(
-          publicRef,
-          reservationType,
-          name,
-          email,
-          tel,
-          people,
-          date,
-          time,
-          clean(payload.seat, 100),
+          date, time, time,
+          requestedSeat, people, people, requestedSeat,
+          publicRef, reservationType, name, email, tel, people, date, time,
           courseName,
           price ? price.drinkLabel : clean(payload.drink_plan, 160),
           price ? yen(price.perPerson) : clean(payload.course_price, 120),
           price ? yen(price.total) : clean(payload.reservation_amount, 80),
           selectedCourse ? selectedCourse.dishes.join(" / ") : clean(payload.course_dishes, 2000),
           clean(payload.note, 1000),
+          people,
         )
         .run();
-
-      const reservationId = Number(created.meta && created.meta.last_row_id);
+      if (!created.meta?.changes) {
+        return reply({ error: "この日時のご希望のお席は満席になりました。別のお席または日時をお選びください。" }, 409);
+      }
+      const reservationId = Number(created.meta.last_row_id);
       const row = await env.DB.prepare("SELECT * FROM course_reservations WHERE id=?").bind(reservationId).first();
       const calendar = row ? await syncCourseToCalendar(env,row) : {state:"error"};
       return reply({ ok:true,publicRef,calendarSynced:calendar.state==="synced" },201);
