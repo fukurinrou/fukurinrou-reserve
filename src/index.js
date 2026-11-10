@@ -52,7 +52,7 @@ const OCCUPANCY = `WITH occupied AS (
       WHEN seat_preference IN ('円卓席','畳席','お座敷席','小上がり座敷席') THEN 0 ELSE 12 END),0) AS long_used,
     COUNT(*) AS active_count
   FROM course_reservations
-  WHERE reservation_date=? AND status IN ('new','handled','paid') AND trashed_at IS NULL
+  WHERE reservation_date=? AND status IN ('new','handled','paid','complete') AND trashed_at IS NULL
     AND time(reservation_time) < time(?, '+2 hours')
     AND time(reservation_time, '+2 hours') > time(?)
 )`;
